@@ -1,0 +1,91 @@
+# Dependencies
+node_modules/
+.pnp/
+.pnp.js
+
+# Frontend builds
+dist/
+build/
+.vite/
+.next/
+out/
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# IDE
+.vscode/
+.idea/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# .NET
+bin/
+obj/
+.vs/
+TestResults/
+*.nupkg
+*.snupkg
+coverage/
+*.coverage
+*.coveragexml
+
+# ASP.NET local settings
+appsettings.Development.json
+appsettings.Local.json
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.ipynb_checkpoints/
+
+# Virtual environments
+venv/
+.venv/
+env/
+ENV/
+
+# Data / cache
+cache/
+tmp/
+temp/
+data/raw/
+data/cache/
+
+# ML / generated artifacts
+models/
+*.pkl
+*.joblib
+*.onnx
+
+# NASA / API local files
+*.sqlite
+*.db
+*.db-journal
+
+# Package manager
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
