@@ -18,9 +18,9 @@
   <img src="https://img.shields.io/badge/status-in%20development-6366F1?style=for-the-badge" />
   <img src="https://img.shields.io/badge/demo-GitHub%20Pages-22C55E?style=for-the-badge" />
   <img src="https://img.shields.io/badge/NASA%20NeoWs-API-2563EB?style=for-the-badge" />
-  <img src="https://img.shields.io/badge/JPL%20SBDB-Data-0F766E?style=for-the-badge" />
-  <img src="https://img.shields.io/badge/TabPFN-ML%20Model-9333EA?style=for-the-badge" />
-  <img src="https://img.shields.io/badge/.NET-ONNX%20Runtime-512BD4?style=for-the-badge" />
+  <img src="https://img.shields.io/badge/JPL%20SBDB-Reference-0F766E?style=for-the-badge" />
+  <img src="https://img.shields.io/badge/frontend-React%20%2B%20TypeScript-22C55E?style=for-the-badge" />
+  <img src="https://img.shields.io/badge/backend-ASP.NET%20Core-512BD4?style=for-the-badge" />
 </p>
 
 ---
@@ -28,551 +28,387 @@
 ## 📑 Table of Contents
 
 - [🌍 Overview](#-overview)
+- [🧩 Current Status](#-current-status)
 - [🚀 Live Demo](#-live-demo)
-- [🧩 Current Project Status](#-current-project-status)
-- [💡 Main Idea](#-main-idea)
-- [✨ Key Features](#-key-features)
-  - [📊 Near-Earth Object Dashboard](#-near-earth-object-dashboard)
-  - [🔎 Close Approach Explorer](#-close-approach-explorer)
-  - [☄️ Asteroid Details Page](#️-asteroid-details-page)
+- [✨ Features](#-features)
+  - [📊 Dashboard](#-dashboard)
+  - [🔎 Flyby Explorer](#-flyby-explorer)
+  - [☄️ Asteroid Details](#️-asteroid-details)
   - [⭐ Watchlist](#-watchlist)
-  - [🚨 Threshold-Based Alerts](#-threshold-based-alerts)
-  - [📈 Data Visualization](#-data-visualization)
-  - [🗄️ Data Cache and Scheduled Synchronization](#️-data-cache-and-scheduled-synchronization)
+  - [🚨 Alerts](#-alerts)
+  - [📈 Charts and 3D Preview](#-charts-and-3d-preview)
 - [🛰️ Data Sources](#️-data-sources)
 - [🛠️ Tech Stack](#️-tech-stack)
-- [🧱 Planned Database Model](#-planned-database-model)
-- [🔌 Planned API Endpoints](#-planned-api-endpoints)
-- [🎯 MVP Scope](#-mvp-scope)
-- [🌟 Nice-To-Have Features](#-nice-to-have-features)
-- [🧪 ML Demo: PHA-Like Classification](#-ml-demo-pha-like-classification)
+- [🔌 Backend API](#-backend-api)
+- [🧱 Project Structure](#-project-structure)
 - [🚀 Getting Started](#-getting-started)
-- [🧭 Example Development Flow](#-example-development-flow)
-- [🎯 Project Goals](#-project-goals)
-- [📚 Educational Value](#-educational-value)
-- [⚠️ Disclaimer](#️-disclaimer)
-- [📄 License](#-license)
-- [🗂️ Project Management](#️-project-management)
+- [🔐 Environment Variables](#-environment-variables)
+- [⚠️ Limitations](#️-limitations)
 - [🛣️ Roadmap](#️-roadmap)
+- [⚠️ Disclaimer](#️-disclaimer)
 - [👩‍💻 Author](#-author)
 
 ---
 
 ## 🌍 Overview
 
-**NearEarth Watch** is a web application for monitoring Near-Earth Objects (NEOs) and their close approaches to Earth.  
-The goal of the project is to collect asteroid data from public NASA/JPL sources, process it into a readable format and present it through a modern dashboard, watchlist and visual analytics.
+**NearEarth** is a full-stack web application for monitoring Near-Earth Objects, asteroid close approaches and potentially hazardous asteroid indicators.
 
-NEO data is publicly available, but it is often scattered across technical APIs and difficult to follow for a regular user. This application focuses on making that information easier to understand through:
+The application uses public NASA NeoWs data and presents it in a cleaner dashboard format. Instead of browsing raw API responses, the user can view summary cards, charts, close approach tables, asteroid details, generated alerts, a watchlist and a simplified 3D space preview.
 
-- clean dashboards,
-- close approach timelines,
-- asteroid detail pages,
-- watchlists,
-- threshold-based alerts,
-- educational explanations,
-- simplified space visualizations.
-
-The application is designed for people interested in space, education, data dashboards and science communication.
+The goal of the project is to make asteroid close approach data easier to explore through a modern web interface.
 
 ---
 
-
-## 🚀 Live Demo
-
-A static mockup version of the dashboard is available here:
-
-<p align="center">
-  <a href="https://avuii.github.io/NearEarth/">
-    <strong>👉 Open NearEarth Demo</strong>
-  </a>
-</p>
-
-The demo is deployed with **GitHub Pages** and shows the planned user interface, dashboard layout and core application flow.
-
-> The current GitHub Pages version is a frontend mockup. Backend integration, NASA API data fetching and ML inference are currently under development.
-
----
-
-## 🧩 Current Project Status
+## 🧩 Current Status
 
 NearEarth is currently under active development.
 
 | Area | Status |
 |---|---|
-| Frontend dashboard | ✅ Mockup demo available |
-| GitHub Pages deployment | ✅ Live |
-| NASA NeoWs integration | 🚧 In progress |
-| JPL SBDB enrichment | 🕓 Planned |
-| Watchlist and alerts | 🕓 Planned |
-| ML classification | 🕓 Planned |
-| ONNX Runtime integration | 🕓 Planned |
-| .NET backend | 🚧 In progress |
+| React frontend | ✅ Implemented |
+| ASP.NET Core backend | ✅ Implemented |
+| NASA NeoWs API integration | ✅ Implemented |
+| Dashboard with live NASA data | ✅ Implemented |
+| 7-day close approach summary | ✅ Implemented |
+| 30-day backend aggregation | ✅ Implemented |
+| Asteroid details lookup | ✅ Implemented |
+| Flyby table and filters | ✅ Implemented |
+| Charts and visual analytics | ✅ Implemented |
+| Watchlist in frontend state/local storage | ✅ Implemented |
+| In-app alert generation | ✅ Implemented |
+| 3D Solar System preview | ✅ Implemented |
+| Database persistence | Not implemented |
+| User accounts | Not implemented |
+| Email notifications | Not implemented |
+| Deployed backend | Not implemented |
 
 ---
 
-## 💡 Main Idea
+## 🚀 Live Demo
 
-The system helps users answer questions such as:
+A static frontend demo is available here:
 
-- Which asteroids will pass near Earth soon?
-- How close will they be?
-- How large are they estimated to be?
-- How fast are they moving?
-- Are any of them marked as potentially hazardous?
-- Which objects should I keep on my watchlist?
-- What does a distance such as `5 LD` actually mean?
+```text
+https://avuii.github.io/NearEarth/
+```
 
-The project is educational and analytical. It does not replace official NASA/JPL/CNEOS risk assessments.
+The GitHub Pages version presents the frontend interface and general application flow.
+
+The full version with live NASA data requires running the ASP.NET Core backend locally, because the NASA API key is stored on the backend side and should not be exposed in the browser.
 
 ---
 
-## ✨ Key Features
+## ✨ Features
 
-### 📊 Near-Earth Object Dashboard
+### 📊 Dashboard
 
-The dashboard presents the most important information in one place:
+The dashboard shows the most important information from NASA NeoWs:
 
-- number of upcoming close approaches,
-- closest asteroid in the selected period,
+- number of objects in the next 7 days,
+- number of objects in the next 30 days,
+- closest upcoming flyby,
 - largest estimated object,
 - fastest object,
 - number of potentially hazardous asteroids,
-- upcoming approaches timeline,
+- flybys over time chart,
+- distance vs date chart,
 - top closest approaches,
-- size and distance charts.
+- recent generated alerts,
+- active watchlist preview.
 
-### 🔎 Close Approach Explorer
+---
 
-A searchable and filterable list of asteroid close approaches.
+### 🔎 Flyby Explorer
 
-Planned filters:
+The flyby page allows browsing current NASA NeoWs close approach data.
 
-- date range,
-- maximum distance from Earth,
-- distance in lunar distances,
-- object name,
-- potentially hazardous status,
-- minimum estimated diameter,
-- relative velocity.
+Available features:
 
-Example fields displayed in the table:
+- list of upcoming asteroid close approaches,
+- filtering by all objects, close approaches and PHA objects,
+- search by asteroid name,
+- sorting by closest distance,
+- watchlist actions,
+- table with distance, velocity, estimated diameter and PHA flag.
 
-| Field | Description |
-|---|---|
-| Object name | Asteroid name or designation |
-| Close approach date | Date and time of closest approach |
-| Distance | Nominal miss distance from Earth |
-| Distance in LD | Distance expressed in lunar distances |
-| Velocity | Relative velocity near Earth |
-| Diameter | Estimated object size |
-| PHA | Potentially Hazardous Asteroid flag |
-| Source | NASA/JPL reference link |
+---
 
-### ☄️ Asteroid Details Page
+### ☄️ Asteroid Details
 
-Each object has a dedicated detail page with:
+Each asteroid can be opened in a details view.
 
-- name and designation,
-- NASA/JPL object identifier,
+The details view uses NASA NeoWs lookup data and displays:
+
+- asteroid name,
+- NASA/JPL identifier,
 - estimated diameter,
+- closest approach date,
+- miss distance,
 - relative velocity,
-- closest approach data,
-- potentially hazardous status,
-- orbit class,
-- external source links,
-- upcoming and historical close approaches,
-- educational explanation of key values.
+- orbit class if available,
+- PHA status,
+- NASA JPL source link.
 
-Example explanation:
-
-> `1 LD` means one lunar distance, which is approximately the average distance between Earth and the Moon.  
-> If an asteroid passes at `10 LD`, it means it is about ten times farther away than the Moon.
+---
 
 ### ⭐ Watchlist
 
-Users can add selected asteroids to a personal watchlist.
+Users can add selected asteroids to a watchlist.
 
-Planned watchlist features:
+Current behavior:
 
-- save interesting objects,
-- track upcoming approaches,
-- add private notes,
-- mark objects as important,
-- view previous and future close approaches,
-- connect alert rules to watched objects.
+- add or remove an asteroid from the watchlist,
+- show watched objects from the current NASA data range,
+- display closest watched distance,
+- display watched PHA count.
+
+The watchlist currently works on the frontend side. There is no user account system or backend database persistence yet.
 
 ---
 
-### 🚨 Threshold-Based Alerts
+### 🚨 Alerts
 
-The application can generate in-app alerts when a selected condition is met.
+The application generates in-app alerts from the currently loaded NASA data.
 
-Example alert rules:
+Current alert rules include:
 
-- distance below `X LD`,
+- close approach below threshold,
 - object marked as potentially hazardous,
-- estimated diameter above selected value,
-- close approach within the next `X` days,
-- velocity above selected value.
+- large estimated diameter,
+- high relative velocity.
 
-In the MVP, alerts are planned as in-app notifications.  
-Email notifications can be added later as an extended feature.
+The alerts are generated inside the application and are not official warnings.
 
 ---
 
-### 📈 Data Visualization
+### 📈 Charts and 3D Preview
 
-The application should not be only a table of API results.  
-A key part of the project is a clear and attractive visual layer.
+The app includes several visual views:
 
-Planned visualizations:
+- flybys over time,
+- distance vs date scatter plot,
+- closest objects table,
+- simplified 3D Solar System preview,
+- asteroid belt reference,
+- fullscreen object preview,
+- camera focus on selected asteroid.
 
-- radar-style close approach view,
-- Earth-centered distance rings,
-- Moon orbit reference ring,
-- timeline of upcoming close approaches,
-- scatter plot: date vs distance,
-- bubble chart: size vs distance,
-- top closest objects ranking,
-- potentially hazardous object cards.
-
-The radar visualization is planned as a simplified educational view, not a precise orbital simulation.
-
----
-
-### 🗄️ Data Cache and Scheduled Synchronization
-
-The application stores processed API data in a local database.  
-This avoids unnecessary API calls and allows the system to work faster.
-
-Planned synchronization flow:
-
-1. Scheduled job runs once per day.
-2. Backend fetches data from NASA/JPL APIs.
-3. Data is normalized and saved in the database.
-4. Dashboard statistics are recalculated.
-5. Alert rules are checked.
-6. New alert events are created if conditions are met.
-
-Manual synchronization can also be available from the admin panel or developer endpoint.
+The 3D view is educational and simplified. It is not a precise orbital simulator.
 
 ---
 
 ## 🛰️ Data Sources
 
-The project is planned around public NASA/JPL data sources.
+### NASA NeoWs
 
-### 🚀 NASA NeoWs
-
-NASA NeoWs is used for Near-Earth Object data, including asteroid lookup and close approach information.
-
-Planned usage:
-
-- browse NEO dataset,
-- search objects by close approach date,
-- fetch asteroid details by object ID,
-- display NASA/JPL source links.
-
-Documentation:
+The main data source is NASA NeoWs:
 
 ```text
 https://api.nasa.gov/
 ```
 
-### 🔭 JPL SBDB Close-Approach Data API
-
-The JPL SBDB Close-Approach Data API is useful for monitoring close approaches of asteroids and comets.
-
-Planned usage:
-
-- fetch upcoming close approaches,
-- filter by date range,
-- filter by distance,
-- sort by closest approach,
-- retrieve distance and velocity values.
-
-Documentation:
+Used endpoints:
 
 ```text
-https://ssd-api.jpl.nasa.gov/doc/cad.html
+GET /neo/rest/v1/feed
+GET /neo/rest/v1/neo/{asteroid_id}
+GET /neo/rest/v1/neo/browse
 ```
 
-### 🪐 JPL SBDB API
+The app uses NeoWs to fetch:
 
-The JPL Small-Body Database API can be used for additional object details.
+- close approach data,
+- asteroid names and IDs,
+- estimated diameters,
+- relative velocities,
+- miss distances,
+- potentially hazardous asteroid flags,
+- NASA JPL links.
 
-Planned usage:
+---
 
-- enrich asteroid details,
-- fetch orbital parameters,
-- fetch selected physical properties,
-- improve detail pages.
+### JPL SBDB Lookup
 
-Documentation:
+JPL Small-Body Database Lookup is used as an external reference source for checking asteroid information.
+
+Example object reference:
 
 ```text
-https://ssd-api.jpl.nasa.gov/doc/sbdb.html
+https://ssd.jpl.nasa.gov/tools/sbdb_lookup.html#/?sstr=2530520
 ```
+
+At this stage, SBDB is not fully integrated as a backend data source. It is used as a reference link/source for checking object information.
+
+---
+
+### SpaceRocks
+
+SpaceRocks is linked as a related project/source around space-data tools and science communication.
+
+```text
+https://github.com/SpaceRocks/
+```
+
 ---
 
 ## 🛠️ Tech Stack
 
-### 🎨 Frontend
+### Frontend
 
 - React
 - TypeScript
 - Vite
-- Tailwind CSS or SCSS
-- Recharts / Apache ECharts
-- Three.js, Canvas or SVG for custom space visualization
+- Tailwind CSS
+- Recharts
+- Three.js
+- Lucide React
 
-### ⚙️ Backend
+### Backend
 
 - ASP.NET Core Web API
-- Entity Framework Core
-- PostgreSQL or SQLite
-- Background jobs with Hangfire or Quartz.NET
-- REST API
-- Optional SignalR for live synchronization status
-
-### 🧠 Optional ML Module
-
-- Python for model training
-- scikit-learn / LightGBM / XGBoost
-- ONNX export
-- ONNX Runtime in ASP.NET Core for inference
-
+- C#
+- HttpClient
+- MemoryCache
+- Swagger / OpenAPI
+- NASA NeoWs API proxy
 
 ---
 
-## 🧱 Planned Database Model
+## 🔌 Backend API
 
-### NeoObject
+The frontend does not call NASA directly.  
+It calls the ASP.NET Core backend, and the backend calls NASA NeoWs using a private API key.
 
-Stores general information about an asteroid or comet.
-
-```text
-NeoObject
-- Id
-- ExternalId
-- Name
-- Designation
-- NasaJplUrl
-- IsPotentiallyHazardous
-- EstimatedDiameterMinMeters
-- EstimatedDiameterMaxMeters
-- AbsoluteMagnitudeH
-- OrbitClass
-- Source
-- CreatedAtUtc
-- UpdatedAtUtc
-```
-
-### CloseApproach
-
-Stores close approach events.
+Current backend endpoints:
 
 ```text
-CloseApproach
-- Id
-- NeoObjectId
-- ApproachDateUtc
-- DistanceAu
-- DistanceLd
-- DistanceKm
-- RelativeVelocityKmS
-- MissDistanceMinKm
-- MissDistanceMaxKm
-- CreatedAtUtc
+GET /api/dashboard
+GET /api/dashboard/range?days=30
+
+GET /api/neos/feed?startDate=YYYY-MM-DD&endDate=YYYY-MM-DD
+GET /api/neos/{id}
+GET /api/neos/browse?page=0&size=20
 ```
 
-### WatchlistItem
+### Why use a backend proxy?
 
-Stores user-saved objects.
+The backend is used to:
 
-```text
-WatchlistItem
-- Id
-- UserId
-- NeoObjectId
-- Note
-- IsImportant
-- CreatedAtUtc
-```
-
-### AlertRule
-
-Stores user-defined alert conditions.
-
-```text
-AlertRule
-- Id
-- UserId
-- Name
-- MaxDistanceLd
-- MinDiameterMeters
-- OnlyPotentiallyHazardous
-- DaysAhead
-- IsActive
-- CreatedAtUtc
-```
-
-### AlertEvent
-
-Stores triggered alerts.
-
-```text
-AlertEvent
-- Id
-- AlertRuleId
-- NeoObjectId
-- CloseApproachId
-- Message
-- IsRead
-- CreatedAtUtc
-```
-
-### SyncLog
-
-Stores synchronization history.
-
-```text
-SyncLog
-- Id
-- Source
-- StartedAtUtc
-- FinishedAtUtc
-- Status
-- ObjectsFetched
-- ErrorMessage
-```
+- hide the NASA API key from the browser,
+- normalize NASA responses,
+- return simpler dashboard data,
+- cache API responses,
+- aggregate multiple 7-day NASA requests into a 30-day range.
 
 ---
 
-## 🔌 Planned API Endpoints
+## 🧱 Project Structure
 
 ```text
-GET    /api/dashboard/summary
-GET    /api/dashboard/charts
-
-GET    /api/neos/upcoming?days=30
-GET    /api/neos/closest?limit=10
-GET    /api/neos/search?query=apophis
-GET    /api/neos/{id}
-
-GET    /api/watchlist
-POST   /api/watchlist/{neoId}
-DELETE /api/watchlist/{neoId}
-
-GET    /api/alerts/rules
-POST   /api/alerts/rules
-PUT    /api/alerts/rules/{id}
-DELETE /api/alerts/rules/{id}
-
-GET    /api/alerts/events
-PUT    /api/alerts/events/{id}/read
-
-POST   /api/sync/run
-GET    /api/sync/status
-GET    /api/sync/logs
+NearEarth/
+├── backend/
+│   └── NearEarth.Api/
+│       ├── Controllers/
+│       ├── Models/
+│       │   ├── Dashboard/
+│       │   └── Nasa/
+│       ├── Options/
+│       ├── Services/
+│       ├── Program.cs
+│       └── appsettings.json
+│
+├── frontend/
+│   ├── src/
+│   │   ├── assets/
+│   │   ├── components/
+│   │   ├── lib/
+│   │   ├── services/
+│   │   └── types/
+│   ├── package.json
+│   └── vite.config.ts
+│
+└── README.md
 ```
 
----
-
-## 🎯 MVP Scope
-
-The first version of the application should include:
-
-- NASA/JPL data integration,
-- close approach list,
-- asteroid detail page,
-- dashboard summary cards,
-- charts and rankings,
-- watchlist,
-- in-app alert rules,
-- daily data synchronization,
-- database cache,
-- simplified radar visualization,
-- source links to NASA/JPL.
-
----
-
-## 🌟 Nice-To-Have Features
-
-Future extensions:
-
-- JPL SBDB enrichment,
-- object comparison: asteroid A vs asteroid B,
-- email notifications,
-- advanced educational mode,
-- admin panel for synchronization logs,
-- export to CSV,
-- public share links,
-- live synchronization status with SignalR,
-- ML demo for PHA-like classification,
-- more advanced orbital visualization.
-
----
-
-## 🧪 ML Demo: PHA-Like Classification
-
-The optional ML module can classify whether an object is similar to known potentially hazardous asteroids based on selected features.
-
-Possible input features:
-
-- absolute magnitude H,
-- estimated diameter,
-- minimum approach distance,
-- relative velocity,
-- orbit class,
-- MOID if available from enriched data.
-
-Possible output:
-
-```text
-Low similarity
-Medium similarity
-High similarity
-```
-
-Important disclaimer:
-
-> The ML module is educational only. It does not provide an official risk assessment and should not be treated as a scientific warning system. Official risk information should always come from NASA/JPL/CNEOS sources.
-
----
-
-## 🔐 Example Environment Variables
-
-```env
-NASA_API_KEY=your_nasa_api_key
-DATABASE_CONNECTION=your_database_connection_string
-SYNC_INTERVAL_HOURS=24
-ALERTS_ENABLED=true
-```
 ---
 
 ## 🚀 Getting Started
 
-### Backend
+### 1. Clone the repository
 
 ```bash
-cd backend
+git clone https://github.com/Avuii/NearEarth.git
+cd NearEarth
+```
+
+---
+
+### 2. Configure NASA API key
+
+Go to the backend project:
+
+```bash
+cd backend/NearEarth.Api
+```
+
+Initialize user secrets:
+
+```bash
+dotnet user-secrets init
+```
+
+Add your NASA API key:
+
+```bash
+dotnet user-secrets set "Nasa:ApiKey" "YOUR_NASA_API_KEY"
+```
+
+The key should not be committed to GitHub.
+
+---
+
+### 3. Run the backend
+
+```bash
 dotnet restore
-dotnet ef database update
 dotnet run
 ```
 
-The backend should be available at:
+The backend should start on a local address similar to:
 
 ```text
-https://localhost:7000
+http://localhost:5272
+https://localhost:7218
 ```
 
-### Frontend
+Swagger is available at:
+
+```text
+http://localhost:5272/swagger
+```
+
+---
+
+### 4. Configure frontend environment
+
+Go to the frontend project:
 
 ```bash
-cd frontend
+cd ../../frontend
+```
+
+Create a `.env` file:
+
+```env
+VITE_API_URL=http://localhost:5272
+```
+
+---
+
+### 5. Run the frontend
+
+```bash
 npm install
 npm run dev
 ```
@@ -585,87 +421,64 @@ http://localhost:5173
 
 ---
 
-## 🧭 Example Development Flow
+## 🔐 Environment Variables
 
-1. Create backend API project.
-2. Add models and database context.
-3. Implement NASA/JPL API client.
-4. Add synchronization service.
-5. Store close approach data in the database.
-6. Build dashboard endpoints.
-7. Create React frontend.
-8. Add charts and visualizations.
-9. Implement watchlist.
-10. Add alert rules.
-11. Improve UI and README.
-12. Add optional ML module.
+Frontend:
 
----
+```env
+VITE_API_URL=http://localhost:5272
+```
 
-## 🎯 Project Goals
+Backend user secret:
 
-The project aims to demonstrate:
+```text
+Nasa:ApiKey=YOUR_NASA_API_KEY
+```
 
-- working with external APIs,
-- backend data aggregation,
-- scheduled background jobs,
-- database caching,
-- dashboard design,
-- data visualization,
-- user watchlists,
-- alert logic,
-- clean API design,
-- educational science communication.
+Backend `appsettings.json` contains only non-secret configuration, for example the NASA base URL.
 
 ---
 
-## 📚 Educational Value
+## ⚠️ Limitations
 
-NearEarth Watch can be useful for:
+Current limitations:
 
-- students learning about space data,
-- people interested in astronomy,
-- users who want to follow upcoming asteroid close approaches,
-- developers learning API aggregation and dashboards,
-- data visualization practice.
+- no database yet,
+- no user accounts,
+- no persistent backend watchlist,
+- no scheduled synchronization,
+- no deployed backend,
+- GitHub Pages demo does not include live backend data,
+- 3D visualization is simplified and educational,
+- alerts are generated in-app and are not official warnings.
+
+---
+
+## 🛣️ Roadmap
+
+Planned next steps:
+
+- deploy backend,
+- add persistent database storage,
+- save watchlist items in the backend,
+- save alert rules in the backend,
+- add synchronization logs,
+- improve JPL SBDB links and enrichment,
+- improve responsive UI,
+- add more screenshots to README,
+- prepare a stable release version.
 
 ---
 
 ## ⚠️ Disclaimer
 
-This application is an educational project.  
-It does not provide official asteroid risk warnings and does not replace NASA, JPL or CNEOS systems.
+NearEarth is an educational project.  
+It does not provide official asteroid risk warnings and does not replace NASA, JPL, CNEOS or other scientific systems.
 
-All critical interpretation of Near-Earth Object risk should be based on official scientific sources.
-
----
-
-## 📄 License
-
-This project can be released under the MIT License.
-
----
-
-## 🗂️ Project Management
-- 📌 [Milestones](https://github.com/Avuii/NearEarth/milestones)
-- ✅ [Issues](https://github.com/Avuii/NearEarth/issues)
-- 🧭 [Project board](https://github.com/Avuii/NearEarth/projects)
-  
----
-
-## 🛣️ Roadmap
-- [M0 — Setup & Standards](https://github.com/Avuii/NearEarth/milestone/1)
-- [M1 — Data Ingestion](https://github.com/Avuii/NearEarth/milestone/2)
-- [M2 — Dataset & Feature Engineering](https://github.com/Avuii/NearEarth/milestone/3)
-- [M3 — Model Training](https://github.com/Avuii/NearEarth/milestone/4)
-- [M4 — ONNX + .NET Inference](https://github.com/Avuii/NearEarth/milestone/5)
-- [M5 — Web Dashboard](https://github.com/Avuii/NearEarth/milestone/6)
-- [M6 — Docs & Release](https://github.com/Avuii/NearEarth/milestone/7)
+All critical interpretation of Near-Earth Object risk should be based on official NASA/JPL/CNEOS sources.
 
 ---
 
 ## 👩‍💻 Author
 
 Created by Katarzyna Stańczyk.
-
-
