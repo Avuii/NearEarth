@@ -18,8 +18,8 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  deploy-demo:
-    name: Deploy demo
+  build-and-deploy:
+    name: Build and deploy demo
     runs-on: ubuntu-latest
 
     environment:
@@ -30,13 +30,28 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+          cache-dependency-path: "demo/package-lock.json"
+
+      - name: Install dependencies
+        working-directory: demo
+        run: npm ci
+
+      - name: Build demo
+        working-directory: demo
+        run: npm run build
+
       - name: Setup GitHub Pages
         uses: actions/configure-pages@v5
 
-      - name: Upload demo artifact
+      - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: "./demo"
+          path: "demo/dist"
 
       - name: Deploy to GitHub Pages
         id: deployment
