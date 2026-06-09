@@ -40,6 +40,8 @@ desktop.ini
 bin/
 obj/
 .vs/
+.env
+.env.local
 TestResults/
 *.nupkg
 *.snupkg
