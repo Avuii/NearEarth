@@ -20,6 +20,7 @@ interface FlybyTableProps {
   limit?: number;
   onlyHazardous?: boolean;
   closeOnly?: boolean;
+  sortByClosest?: boolean;
   watchlistIds?: string[];
   onSelect?: (id: string) => void;
   onToggleWatch?: (id: string) => void;
@@ -32,6 +33,7 @@ export function FlybyTable({
   limit,
   onlyHazardous,
   closeOnly,
+  sortByClosest = false,
   watchlistIds = [],
   onSelect,
   onToggleWatch,
@@ -39,10 +41,18 @@ export function FlybyTable({
   const t = translations[lang];
   const source = items ?? neoObjects;
 
-  const rows = source
-    .filter((item) => !onlyHazardous || item.isPHA)
-    .filter((item) => !closeOnly || item.distanceLD <= 5)
-    .slice(0, limit ?? source.length);
+
+  const rows = [...source]
+  .filter((item) => !onlyHazardous || item.isPHA)
+  .filter((item) => !closeOnly || item.distanceLD <= 5)
+  .sort((a, b) => {
+    if (!sortByClosest) {
+      return 0;
+    }
+
+    return Number(a.distanceLD) - Number(b.distanceLD);
+  })
+  .slice(0, limit ?? source.length);
 
   return (
     <div className="overflow-hidden rounded-xl border border-border bg-card/70 backdrop-blur-xl">

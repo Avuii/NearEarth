@@ -63,7 +63,7 @@ export const translations = {
     ldExplanation:
       "This object will pass at {distance} LD from Earth. It is a close approach, but there is no direct impact threat.",
 
-    dataSource: "Data: NASA/JPL-style NEO fields",
+    dataSource: "Data: NASA NEO",
     copyright: "NearEarth © 2026",
     simplifiedVisualization: "Simplified close approach visualization",
 
@@ -150,7 +150,7 @@ export const translations = {
     ldExplanation:
       "Obiekt przeleci w odległości {distance} LD od Ziemi. To bliskie zbliżenie, ale bez bezpośredniego zagrożenia.",
 
-    dataSource: "Dane: NASA/JPL-style NEO fields",
+    dataSource: "Dane: NASA NEO",
     copyright: "NearEarth © 2026",
     simplifiedVisualization: "Uproszczona wizualizacja zbliżeń",
 

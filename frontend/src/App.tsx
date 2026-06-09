@@ -53,12 +53,29 @@ export default function App() {
     );
   }
 
+  function openAsteroidInOrbitalPreview(id: string) {
+    closeAsteroidDetails();
+    setActiveView("dashboard");
+
+    const dispatchFocus = () => {
+      window.dispatchEvent(
+        new CustomEvent("nearearth:focus-orbit", {
+          detail: { id, follow: true },
+        })
+      );
+    };
+
+    window.setTimeout(dispatchFocus, 180);
+    window.setTimeout(dispatchFocus, 520);
+  }
+
   let content = (
     <DashboardPage
       lang={lang}
       watchlistIds={watchlistIds}
       onToggleWatchlist={toggleWatchlist}
       onOpenAsteroid={openAsteroidDetails}
+      onOpenAsteroidPreview={openAsteroidInOrbitalPreview}
       onOpenFlybys={() => setActiveView("flybys")}
     />
   );
@@ -229,6 +246,7 @@ export default function App() {
                 onClose={closeAsteroidDetails}
                 isWatched={watchlistIds.includes(selectedAsteroidId)}
                 onToggleWatch={toggleWatchlist}
+                onOpenPreview={openAsteroidInOrbitalPreview}
               />
             </div>
           </div>

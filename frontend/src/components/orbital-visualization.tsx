@@ -46,6 +46,12 @@ type HoverData = {
   y: number;
 };
 
+type FocusRequest = {
+  id: string;
+  follow: boolean;
+  nonce: number;
+};
+
 type PlanetConfig = {
   id: string;
   label: string;
@@ -626,6 +632,31 @@ export function OrbitalVisualization({
   apiAsteroids,
 }: OrbitalVisualizationProps) {
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [focusRequest, setFocusRequest] = useState<FocusRequest | null>(null);
+
+  useEffect(() => {
+    function handleExternalFocusRequest(event: Event) {
+      const customEvent = event as CustomEvent<{ id?: string; follow?: boolean }>;
+      const id = customEvent.detail?.id;
+
+      if (!id) return;
+
+      setFocusRequest({
+        id,
+        follow: customEvent.detail?.follow ?? true,
+        nonce: Date.now(),
+      });
+      setIsFullscreen(true);
+    }
+
+    window.addEventListener("nearearth:focus-orbit", handleExternalFocusRequest);
+    window.addEventListener("nearearth:focus-asteroid", handleExternalFocusRequest);
+
+    return () => {
+      window.removeEventListener("nearearth:focus-orbit", handleExternalFocusRequest);
+      window.removeEventListener("nearearth:focus-asteroid", handleExternalFocusRequest);
+    };
+  }, []);
 
   useEffect(() => {
     if (!isFullscreen) return;
@@ -647,11 +678,12 @@ export function OrbitalVisualization({
       />
 
       {isFullscreen && (
-        <div className="fixed inset-0 z-[120] bg-black/80 p-4 backdrop-blur-xl">
-          <div className="relative h-full overflow-hidden rounded-3xl border border-border bg-background/90 shadow-[0_30px_120px_rgba(0,0,0,0.75)]">
+        <div className="fixed inset-0 z-[120] bg-black p-4">
+          <div className="relative h-full overflow-hidden rounded-3xl border border-white/10 bg-black shadow-[0_30px_120px_rgba(0,0,0,0.75)]">
             <SolarSystemScene
               fullscreen
               apiAsteroids={apiAsteroids}
+              focusRequest={focusRequest}
               onCloseFullscreen={() => setIsFullscreen(false)}
             />
           </div>
@@ -664,6 +696,7 @@ export function OrbitalVisualization({
 interface SolarSystemSceneProps {
   fullscreen: boolean;
   apiAsteroids?: any[];
+  focusRequest?: FocusRequest | null;
   onOpenFullscreen?: () => void;
   onCloseFullscreen?: () => void;
 }
@@ -671,6 +704,7 @@ interface SolarSystemSceneProps {
 function SolarSystemScene({
   fullscreen,
   apiAsteroids,
+  focusRequest,
   onOpenFullscreen,
   onCloseFullscreen,
 }: SolarSystemSceneProps) {
@@ -720,11 +754,21 @@ function SolarSystemScene({
   }, [normalizedAsteroids]);
 
   useEffect(() => {
+    if (!fullscreen || !focusRequest) return;
+
+    const timer = window.setTimeout(() => {
+      focusBodyById(focusRequest.id, focusRequest.follow);
+    }, 180);
+
+    return () => window.clearTimeout(timer);
+  }, [fullscreen, focusRequest?.nonce]);
+
+  useEffect(() => {
     const wrapper = wrapperRef.current;
     if (!wrapper) return;
 
     const scene = new THREE.Scene();
-    scene.background = new THREE.Color("#020617");
+    scene.background = new THREE.Color("#000000");
 
     const camera = new THREE.PerspectiveCamera(
       45,
@@ -748,6 +792,7 @@ function SolarSystemScene({
     renderer.outputColorSpace = THREE.SRGBColorSpace;
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
     renderer.toneMappingExposure = 1.25;
+    renderer.setClearColor("#000000", 1);
     wrapper.appendChild(renderer.domElement);
     rendererRef.current = renderer;
 
@@ -1489,8 +1534,8 @@ function SolarSystemScene({
       ref={wrapperRef}
       className={
         fullscreen
-          ? "relative h-full w-full overflow-hidden"
-          : "relative h-[560px] overflow-hidden rounded-2xl border border-border bg-card/70 shadow-2xl backdrop-blur-xl"
+          ? "relative h-full w-full overflow-hidden bg-black"
+          : "relative h-[560px] overflow-hidden rounded-2xl border border-white/10 bg-black shadow-2xl"
       }
     >
       <div className="pointer-events-none absolute left-5 top-5 z-10 rounded-2xl border border-white/10 bg-background/70 px-4 py-3 shadow-xl backdrop-blur-xl">
@@ -1763,7 +1808,6 @@ function SolarSystemScene({
 
       {!fullscreen && (
         <div className="pointer-events-none absolute bottom-5 right-5 z-10 rounded-2xl border border-white/10 bg-background/65 px-4 py-3 text-xs text-muted-foreground shadow-xl backdrop-blur-xl">
-          <p>Lighting: ambient + hemisphere + sun + fill lights</p>
           <p>Asteroid belt: 2.2–3.3 AU</p>
           <p>NEO asteroids: generated from NASA API or local fallback</p>
         </div>
