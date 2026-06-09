@@ -25,6 +25,39 @@
 
 ---
 
+## 📑 Table of Contents
+
+- [🌍 Overview](#-overview)
+- [🚀 Live Demo](#-live-demo)
+- [🧩 Current Project Status](#-current-project-status)
+- [💡 Main Idea](#-main-idea)
+- [✨ Key Features](#-key-features)
+  - [📊 Near-Earth Object Dashboard](#-near-earth-object-dashboard)
+  - [🔎 Close Approach Explorer](#-close-approach-explorer)
+  - [☄️ Asteroid Details Page](#️-asteroid-details-page)
+  - [⭐ Watchlist](#-watchlist)
+  - [🚨 Threshold-Based Alerts](#-threshold-based-alerts)
+  - [📈 Data Visualization](#-data-visualization)
+  - [🗄️ Data Cache and Scheduled Synchronization](#️-data-cache-and-scheduled-synchronization)
+- [🛰️ Data Sources](#️-data-sources)
+- [🛠️ Tech Stack](#️-tech-stack)
+- [🧱 Planned Database Model](#-planned-database-model)
+- [🔌 Planned API Endpoints](#-planned-api-endpoints)
+- [🎯 MVP Scope](#-mvp-scope)
+- [🌟 Nice-To-Have Features](#-nice-to-have-features)
+- [🧪 ML Demo: PHA-Like Classification](#-ml-demo-pha-like-classification)
+- [🚀 Getting Started](#-getting-started)
+- [🧭 Example Development Flow](#-example-development-flow)
+- [🎯 Project Goals](#-project-goals)
+- [📚 Educational Value](#-educational-value)
+- [⚠️ Disclaimer](#️-disclaimer)
+- [📄 License](#-license)
+- [🗂️ Project Management](#️-project-management)
+- [🛣️ Roadmap](#️-roadmap)
+- [👩‍💻 Author](#-author)
+
+---
+
 ## 🌍 Overview
 
 **NearEarth Watch** is a web application for monitoring Near-Earth Objects (NEOs) and their close approaches to Earth.  
@@ -70,10 +103,10 @@ NearEarth is currently under active development.
 | Frontend dashboard | ✅ Mockup demo available |
 | GitHub Pages deployment | ✅ Live |
 | NASA NeoWs integration | 🚧 In progress |
-| JPL SBDB enrichment | planned |
-| Watchlist and alerts | planned |
-| ML classification | planned |
-| ONNX Runtime integration | planned |
+| JPL SBDB enrichment | 🕓 Planned |
+| Watchlist and alerts | 🕓 Planned |
+| ML classification | 🕓 Planned |
+| ONNX Runtime integration | 🕓 Planned |
 | .NET backend | 🚧 In progress |
 
 ---
@@ -206,7 +239,7 @@ Planned visualizations:
 
 The radar visualization is planned as a simplified educational view, not a precise orbital simulation.
 
---
+---
 
 ### 🗄️ Data Cache and Scheduled Synchronization
 
@@ -465,7 +498,7 @@ The first version of the application should include:
 
 ---
 
-## Nice-To-Have Features
+## 🌟 Nice-To-Have Features
 
 Future extensions:
 
@@ -614,27 +647,25 @@ This project can be released under the MIT License.
 ---
 
 ## 🗂️ Project Management
-- 📌 [Milestones](https://github.com/Avuii/AsteroidSafe/milestones)
-- ✅ [Issues](https://github.com/Avuii/AsteroidSafe/issues)
-- 🧭 [Project board](https://github.com/Avuii/AsteroidSafe/projects)
+- 📌 [Milestones](https://github.com/Avuii/NearEarth/milestones)
+- ✅ [Issues](https://github.com/Avuii/NearEarth/issues)
+- 🧭 [Project board](https://github.com/Avuii/NearEarth/projects)
   
 ---
 
 ## 🛣️ Roadmap
-- [M0 — Setup & Standards](./milestone/1)
-- [M1 — Data Ingestion](./milestone/2)
-- [M2 — Dataset & Feature Engineering](./milestone/3)
-- [M3 — Model Training](./milestone/4)
-- [M4 — ONNX + .NET Inference](./milestone/5)
-- [M5 — Web Dashboard](./milestone/6)
-- [M6 — Docs & Release](./milestone/7)
+- [M0 — Setup & Standards](https://github.com/Avuii/NearEarth/milestone/1)
+- [M1 — Data Ingestion](https://github.com/Avuii/NearEarth/milestone/2)
+- [M2 — Dataset & Feature Engineering](https://github.com/Avuii/NearEarth/milestone/3)
+- [M3 — Model Training](https://github.com/Avuii/NearEarth/milestone/4)
+- [M4 — ONNX + .NET Inference](https://github.com/Avuii/NearEarth/milestone/5)
+- [M5 — Web Dashboard](https://github.com/Avuii/NearEarth/milestone/6)
+- [M6 — Docs & Release](https://github.com/Avuii/NearEarth/milestone/7)
 
 ---
 
 ## 👩‍💻 Author
 
 Created by Katarzyna Stańczyk.
-
-
 
 
