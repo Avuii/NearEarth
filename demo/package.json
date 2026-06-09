@@ -1,4 +1,4 @@
-{
+{{
   "name": "nearearth-frontend",
   "private": true,
   "version": "0.1.0",
@@ -10,20 +10,18 @@
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.3.0",
-    "@vitejs/plugin-react": "^5.1.0",
-    "lucide-react": "^0.468.0",
-    "react": "^19.2.0",
-    "react-dom": "^19.2.0",
-    "recharts": "^3.3.0",
+    "@vitejs/plugin-react": "latest",
+    "lucide-react": "latest",
+    "react": "latest",
+    "react-dom": "latest",
+    "recharts": "latest",
     "tailwindcss": "^4.3.0",
     "three": "^0.184.0",
-    "vite": "^7.2.0"
+    "typescript": "latest",
+    "vite": "latest"
   },
   "devDependencies": {
-    "@types/node": "^24.10.0",
-    "@types/react": "^19.2.0",
-    "@types/react-dom": "^19.2.0",
-    "@types/three": "^0.184.0",
-    "typescript": "^5.9.3"
+    "@types/react": "latest",
+    "@types/react-dom": "latest"
   }
 }
