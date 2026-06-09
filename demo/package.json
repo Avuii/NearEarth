@@ -10,18 +10,20 @@
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.3.0",
-    "@vitejs/plugin-react": "latest",
-    "lucide-react": "latest",
-    "react": "latest",
-    "react-dom": "latest",
-    "recharts": "latest",
+    "@vitejs/plugin-react": "^5.1.0",
+    "lucide-react": "^0.468.0",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
+    "recharts": "^3.3.0",
     "tailwindcss": "^4.3.0",
     "three": "^0.184.0",
-    "typescript": "latest",
-    "vite": "latest"
+    "vite": "^7.2.0"
   },
   "devDependencies": {
-    "@types/react": "latest",
-    "@types/react-dom": "latest"
+    "@types/node": "^24.10.0",
+    "@types/react": "^19.2.0",
+    "@types/react-dom": "^19.2.0",
+    "@types/three": "^0.184.0",
+    "typescript": "^5.9.3"
   }
 }
