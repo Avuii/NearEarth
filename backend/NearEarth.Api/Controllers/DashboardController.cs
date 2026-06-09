@@ -14,6 +14,59 @@ public class DashboardController : ControllerBase
         _dashboardService = dashboardService;
     }
 
+    [HttpGet("range")]
+    public async Task<IActionResult> GetDashboardRange([FromQuery] string? startDate, [FromQuery] int days = 30)
+    {
+        var today = DateTime.UtcNow.Date;
+
+        if (string.IsNullOrWhiteSpace(startDate))
+        {
+            startDate = today.ToString("yyyy-MM-dd");
+        }
+
+        if (!DateTime.TryParse(startDate, out var parsedStartDate))
+        {
+            return BadRequest(new
+            {
+                message = "startDate must use yyyy-MM-dd format"
+            });
+        }
+
+        if (days < 1 || days > 30)
+        {
+            return BadRequest(new
+            {
+                message = "days must be between 1 and 30"
+            });
+        }
+
+        try
+        {
+            var result = await _dashboardService.GetDashboardRangeAsync(
+                parsedStartDate.ToString("yyyy-MM-dd"),
+                days
+            );
+
+            return Ok(result);
+        }
+        catch (HttpRequestException ex)
+        {
+            return StatusCode(502, new
+            {
+                message = "NASA NeoWs request failed",
+                details = ex.Message
+            });
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new
+            {
+                message = "Dashboard range data could not be generated",
+                details = ex.Message
+            });
+        }
+    }
+
     [HttpGet]
     public async Task<IActionResult> GetDashboard([FromQuery] string? startDate, [FromQuery] string? endDate)
     {

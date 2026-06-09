@@ -1,23 +1,51 @@
 import { Eye, Star } from "lucide-react";
 import { neoObjects } from "../data/neo-data";
 import { Language, translations } from "../lib/i18n";
+import type { DashboardNeoItem } from "../types/dashboard";
 import { Badge } from "./ui/badge";
 import { Card } from "./ui/card";
 
 interface WatchlistPanelProps {
   lang: Language;
+  objects?: DashboardNeoItem[];
   watchlistIds?: string[];
   onOpenAsteroid?: (id: string) => void;
 }
 
+type WatchItem = {
+  id: string;
+  name: string;
+  distanceLD: number;
+  isPHA: boolean;
+  note: string;
+};
+
 export function WatchlistPanel({
   lang,
+  objects,
   watchlistIds = [],
   onOpenAsteroid,
 }: WatchlistPanelProps) {
   const t = translations[lang];
 
-  const watched = neoObjects
+  const source =
+    objects && objects.length > 0
+      ? objects.map((item) => ({
+          id: item.id,
+          name: item.name,
+          distanceLD: item.missDistanceLunar,
+          isPHA: item.isPotentiallyHazardous,
+          note: buildRealNote(item, lang),
+        }))
+      : neoObjects.map((item) => ({
+          id: item.id,
+          name: item.name,
+          distanceLD: item.distanceLD,
+          isPHA: item.isPHA,
+          note: item.note,
+        }));
+
+  const watched = source
     .filter((item) => watchlistIds.includes(item.id))
     .slice(0, 4);
 
@@ -63,7 +91,7 @@ export function WatchlistPanel({
                 </div>
 
                 <Badge variant={item.isPHA ? "danger" : "warning"}>
-                  {item.isPHA ? "PHA" : `${item.distanceLD} LD`}
+                  {item.isPHA ? "PHA" : `${formatNumber(item.distanceLD, 2)} LD`}
                 </Badge>
               </div>
 
@@ -76,4 +104,30 @@ export function WatchlistPanel({
       )}
     </Card>
   );
+}
+
+function buildRealNote(item: DashboardNeoItem, lang: Language) {
+  const distance = formatNumber(item.missDistanceLunar, 2);
+  const velocity = formatNumber(item.velocityKilometersPerSecond, 1);
+  const diameter = formatNumber(item.diameterAverageMeters, 0);
+
+  if (lang === "pl") {
+    if (item.isPotentiallyHazardous) {
+      return `Obiekt PHA, dystans ${distance} LD, prędkość ${velocity} km/s, średnica około ${diameter} m.`;
+    }
+
+    return `Obserwowany obiekt, dystans ${distance} LD, prędkość ${velocity} km/s, średnica około ${diameter} m.`;
+  }
+
+  if (item.isPotentiallyHazardous) {
+    return `PHA object, distance ${distance} LD, velocity ${velocity} km/s, diameter about ${diameter} m.`;
+  }
+
+  return `Watched object, distance ${distance} LD, velocity ${velocity} km/s, diameter about ${diameter} m.`;
+}
+
+function formatNumber(value: number, maximumFractionDigits: number) {
+  return new Intl.NumberFormat("en-US", {
+    maximumFractionDigits,
+  }).format(value);
 }

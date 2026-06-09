@@ -8,8 +8,28 @@ import {
   YAxis,
 } from "recharts";
 import { chartData } from "../data/neo-data";
+import type { DailyApproachCount } from "../types/dashboard";
 
-export function FlybyChart() {
+interface FlybyChartProps {
+  data?: DailyApproachCount[];
+}
+
+type ChartPoint = {
+  date: string;
+  count: number;
+  hazardousCount?: number;
+};
+
+export function FlybyChart({ data }: FlybyChartProps) {
+  const source: ChartPoint[] =
+    data && data.length > 0
+      ? data.map((item) => ({
+          date: formatShortDate(item.date),
+          count: item.count,
+          hazardousCount: item.hazardousCount,
+        }))
+      : chartData;
+
   return (
     <div className="h-[280px] min-h-[280px] w-full min-w-0">
       <ResponsiveContainer
@@ -18,7 +38,7 @@ export function FlybyChart() {
         minWidth={260}
         minHeight={260}
       >
-        <AreaChart data={chartData}>
+        <AreaChart data={source}>
           <defs>
             <linearGradient id="countGradient" x1="0" y1="0" x2="0" y2="1">
               <stop
@@ -53,6 +73,7 @@ export function FlybyChart() {
             fontSize={11}
             tickLine={false}
             axisLine={false}
+            allowDecimals={false}
           />
 
           <Tooltip
@@ -83,21 +104,43 @@ export function FlybyChart() {
   );
 }
 
+function formatShortDate(value: string) {
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return value;
+  }
+
+  return date.toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+  });
+}
+
 function CustomTooltip({ active, payload, label }: any) {
   if (!active || !payload?.length) return null;
 
+  const item = payload[0].payload;
+
   return (
     <div className="rounded-xl border border-border bg-card/95 p-3 text-xs shadow-2xl backdrop-blur-xl">
-      <p className="mb-1 text-sm font-medium text-foreground">
-        {label}
-      </p>
+      <p className="mb-1 text-sm font-medium text-foreground">{label}</p>
 
       <p className="text-muted-foreground">
         count:{" "}
         <span className="font-semibold text-cyan-300">
-          {payload[0].value}
+          {item.count}
         </span>
       </p>
+
+      {typeof item.hazardousCount === "number" && (
+        <p className="text-muted-foreground">
+          PHA:{" "}
+          <span className="font-semibold text-amber-300">
+            {item.hazardousCount}
+          </span>
+        </p>
+      )}
     </div>
   );
 }

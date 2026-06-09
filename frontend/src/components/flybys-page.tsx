@@ -1,6 +1,14 @@
-import { useMemo, useState } from "react";
-import { AlertTriangle, Filter, Search, Signal, Zap } from "lucide-react";
-import { neoObjects } from "../data/neo-data";
+import { useEffect, useMemo, useState } from "react";
+import {
+  AlertTriangle,
+  Filter,
+  RefreshCw,
+  Search,
+  Signal,
+  Zap,
+} from "lucide-react";
+import { getDashboardData } from "../services/nearEarthApi";
+import type { DashboardNeoItem, DashboardResponse } from "../types/dashboard";
 import { Language, translations } from "../lib/i18n";
 import { FlybyChart } from "./flyby-chart";
 import { FlybyTable } from "./flyby-table";
@@ -27,17 +35,77 @@ export function FlybysPage({
   onOpenAsteroid,
 }: FlybysPageProps) {
   const t = translations[lang];
+
+  const [dashboardData, setDashboardData] = useState<DashboardResponse | null>(null);
   const [filter, setFilter] = useState<FilterMode>("all");
   const [search, setSearch] = useState("");
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  async function loadData() {
+    try {
+      setIsLoading(true);
+      setError(null);
+
+      const data = await getDashboardData();
+      setDashboardData(data);
+    } catch {
+      setError("Could not load NASA NeoWs data.");
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    loadData();
+  }, []);
+
+  const objects = dashboardData?.objects ?? [];
 
   const filtered = useMemo(() => {
-    return neoObjects
-      .filter((item) => filter !== "close" || item.distanceLD <= 5)
-      .filter((item) => filter !== "pha" || item.isPHA)
+    return objects
+      .filter((item) => filter !== "close" || item.missDistanceLunar <= 5)
+      .filter((item) => filter !== "pha" || item.isPotentiallyHazardous)
       .filter((item) =>
         item.name.toLowerCase().includes(search.toLowerCase())
       );
-  }, [filter, search]);
+  }, [objects, filter, search]);
+
+  if (isLoading) {
+    return (
+      <div className="flex min-h-[420px] items-center justify-center">
+        <Card className="flex flex-col items-center gap-4 p-8 text-center backdrop-blur-xl">
+          <RefreshCw className="h-8 w-8 animate-spin text-primary" />
+          <div>
+            <p className="text-lg font-semibold text-foreground">
+              Loading NASA flyby data...
+            </p>
+            <p className="text-sm text-muted-foreground">
+              Fetching close approaches from backend.
+            </p>
+          </div>
+        </Card>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex min-h-[420px] items-center justify-center">
+        <Card className="max-w-md p-8 text-center backdrop-blur-xl">
+          <AlertTriangle className="mx-auto mb-4 h-10 w-10 text-destructive" />
+          <h2 className="mb-2 text-xl font-semibold text-foreground">
+            Data loading failed
+          </h2>
+          <p className="mb-5 text-sm text-muted-foreground">{error}</p>
+          <Button onClick={loadData}>
+            <RefreshCw className="h-4 w-4" />
+            Try again
+          </Button>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-8">
@@ -108,14 +176,18 @@ export function FlybysPage({
         <StatsCard
           icon={Signal}
           label={t.allObjects}
-          value={neoObjects.length}
-          subtext={t.trackingAll}
+          value={objects.length}
+          subtext={
+            dashboardData
+              ? `NASA NeoWs: ${dashboardData.startDate} - ${dashboardData.endDate}`
+              : t.trackingAll
+          }
         />
 
         <StatsCard
           icon={Zap}
           label={t.closeOnly}
-          value={neoObjects.filter((item) => item.distanceLD <= 5).length}
+          value={objects.filter((item) => item.missDistanceLunar <= 5).length}
           subtext="≤ 5 LD"
           highlight
         />
@@ -123,7 +195,7 @@ export function FlybysPage({
         <StatsCard
           icon={AlertTriangle}
           label={t.hazardousOnly}
-          value={neoObjects.filter((item) => item.isPHA).length}
+          value={objects.filter((item) => item.isPotentiallyHazardous).length}
           subtext="NASA PHA flag"
           highlight
         />
@@ -135,7 +207,7 @@ export function FlybysPage({
             {t.flybysOverTime}
           </h3>
 
-          <FlybyChart />
+          <FlybyChart data={dashboardData?.dailyApproaches ?? []} />
         </Card>
 
         <Card className="p-6 backdrop-blur-xl">
@@ -143,14 +215,14 @@ export function FlybysPage({
             {t.distanceVsDate}
           </h3>
 
-          <ScatterPlot />
+          <ScatterPlot objects={filtered} />
         </Card>
       </section>
 
       <section>
         <FlybyTable
           lang={lang}
-          items={filtered}
+          objects={filtered}
           watchlistIds={watchlistIds}
           onToggleWatch={onToggleWatchlist}
           onSelect={onOpenAsteroid}

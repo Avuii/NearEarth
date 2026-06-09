@@ -44,6 +44,46 @@ public class DashboardService
             }
         }
 
+        return BuildDashboardResponse(startDate, endDate, objects);
+    }
+
+    public async Task<DashboardResponse> GetDashboardRangeAsync(string startDate, int days)
+    {
+        var start = DateTime.Parse(startDate, CultureInfo.InvariantCulture);
+        var end = start.AddDays(days - 1);
+
+        var allObjects = new List<DashboardNeoItem>();
+
+        var currentStart = start;
+
+        while (currentStart <= end)
+        {
+            var currentEnd = currentStart.AddDays(7);
+
+            if (currentEnd > end)
+            {
+                currentEnd = end;
+            }
+
+            var chunkStart = currentStart.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+            var chunkEnd = currentEnd.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+
+            var chunk = await GetDashboardAsync(chunkStart, chunkEnd);
+
+            allObjects.AddRange(chunk.Objects);
+
+            currentStart = currentEnd.AddDays(1);
+        }
+
+        return BuildDashboardResponse(
+            start.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
+            end.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
+            allObjects
+        );
+    }
+
+    private DashboardResponse BuildDashboardResponse(string startDate, string endDate, List<DashboardNeoItem> objects)
+    {
         objects = objects
             .OrderBy(x => x.CloseApproachDate)
             .ThenBy(x => x.MissDistanceKilometers)
