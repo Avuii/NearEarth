@@ -1,11 +1,10 @@
-name: Deploy demo to GitHub Pages
+name: Deploy NearEarth demo to GitHub Pages
 
 on:
   push:
-    branches: ["main"]
-    paths:
-      - "demo/**"
-      - ".github/workflows/deploy-demo.yml"
+    branches:
+      - main
+
   workflow_dispatch:
 
 permissions:
@@ -14,12 +13,43 @@ permissions:
   id-token: write
 
 concurrency:
-  group: "pages"
+  group: github-pages
   cancel-in-progress: false
 
 jobs:
-  build-and-deploy:
-    name: Build and deploy demo
+  build:
+    name: Build demo app
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: demo
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: demo/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build project
+        run: npm run build
+
+      - name: Upload GitHub Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./demo/dist
+
+  deploy:
+    name: Deploy to GitHub Pages
+    needs: build
     runs-on: ubuntu-latest
 
     environment:
@@ -27,32 +57,6 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: "20"
-          cache: "npm"
-          cache-dependency-path: "demo/package-lock.json"
-
-      - name: Install dependencies
-        working-directory: demo
-        run: npm ci
-
-      - name: Build demo
-        working-directory: demo
-        run: npm run build
-
-      - name: Setup GitHub Pages
-        uses: actions/configure-pages@v5
-
-      - name: Upload Pages artifact
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: "demo/dist"
-
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
