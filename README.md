@@ -1,4 +1,9 @@
-# NearEarth
+<p align="center">
+  <img src="frontend/src/assets/logo.png" alt="NearEarth Logo" width="220" />
+</p>
+
+# NearEarth  
+
 🚧 **Status: In Progress (under active development)**  
 
 Web dashboard that ingests NASA NeoWs / JPL SBDB data and classifies Near-Earth Objects as Potentially Hazardous (PHA) using a pretrained tabular foundation model (TabPFN), deployed via ONNX Runtime in .NET.
