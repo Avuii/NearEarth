@@ -22,7 +22,9 @@
   <img src="https://img.shields.io/badge/frontend-React%20%2B%20TypeScript-22C55E?style=for-the-badge" />
   <img src="https://img.shields.io/badge/backend-ASP.NET%20Core-512BD4?style=for-the-badge" />
 </p>
-
+<p align="center">
+<img width="800" alt="image" src="https://github.com/user-attachments/assets/f93240ad-2c71-4c62-9da9-f59ffbdb5541" />
+</p>
 ---
 
 ## 📑 Table of Contents
