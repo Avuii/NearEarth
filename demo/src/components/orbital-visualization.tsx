@@ -423,9 +423,9 @@ function createOrbitLine(
 
 function createMoonOrbit(radius: number) {
   const curve = new THREE.EllipseCurve(0, 0, radius, radius, 0, Math.PI * 2);
-  const points = curve
-    .getPoints(96)
-    .map((point) => new THREE.Vector3(point.x, 0, point.y));
+const points = curve
+  .getPoints(96)
+  .map((point: THREE.Vector2) => new THREE.Vector3(point.x, 0, point.y));
 
   const geometry = new THREE.BufferGeometry().setFromPoints(points);
 
