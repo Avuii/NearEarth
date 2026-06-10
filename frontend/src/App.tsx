@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Activity, Languages, Search, User } from "lucide-react";
+import { Activity, Languages, User } from "lucide-react";
 import logo from "./assets/logo.png";
 import { EducationCard } from "./components/education-card";
 import { StarfieldBackground } from "./components/starfield-background";
@@ -11,7 +11,7 @@ import { InsightsPage } from "./components/insights-page";
 import { WatchlistPage } from "./components/watchlist-page";
 import { Badge } from "./components/ui/badge";
 import { Button } from "./components/ui/button";
-import { Input } from "./components/ui/input";
+import { GlobalSearch } from "./components/global-search";
 import { TabsList, TabsTrigger } from "./components/ui/tabs";
 import { Language, translations } from "./lib/i18n";
 
@@ -20,7 +20,6 @@ type View = "dashboard" | "flybys" | "watchlist" | "alerts" | "insights" | "edu"
 export default function App() {
   const [lang, setLang] = useState<Language>("en");
   const [activeView, setActiveView] = useState<View>("dashboard");
-  const [searchQuery, setSearchQuery] = useState("");
   const [selectedAsteroidId, setSelectedAsteroidId] = useState<string | null>(null);
 
   const [watchlistIds, setWatchlistIds] = useState<string[]>(() => {
@@ -213,16 +212,11 @@ export default function App() {
               </div>
 
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-                <div className="relative hidden lg:block">
-                  <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-cyan-300/70" />
-
-                  <Input
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    placeholder={t.searchPlaceholder}
-                    className="h-11 w-[300px] rounded-2xl border border-white/10 bg-white/[0.045] pl-11 pr-4 text-sm text-foreground shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] outline-none backdrop-blur-xl placeholder:text-muted-foreground/70 focus:border-cyan-300/50 focus:bg-white/[0.07] focus:ring-2 focus:ring-cyan-400/15 xl:w-[360px]"
-                  />
-                </div>
+                <GlobalSearch
+                  lang={lang}
+                  onNavigate={(view) => setActiveView(view)}
+                  onOpenAsteroid={openAsteroidDetails}
+                />
 
                 <Badge variant="outline" className="w-fit whitespace-nowrap text-xs">
                   <Activity className="h-3.5 w-3.5" />
@@ -246,9 +240,9 @@ export default function App() {
           </div>
         </header>
 
-       <main className="relative z-10 mx-auto w-full max-w-[1020px] px-5 py-8 lg:px-8">
-  {content}
-</main>
+        <main className="relative z-10 mx-auto w-full max-w-[1020px] px-5 py-8 lg:px-8">
+          {content}
+        </main>
 
         <footer className="mt-16 border-t border-border bg-background/85 backdrop-blur-xl">
           <div className="mx-auto flex max-w-7xl flex-col justify-between gap-2 px-5 py-6 text-sm text-muted-foreground md:flex-row">
