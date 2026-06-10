@@ -2,6 +2,7 @@ import { Star } from "lucide-react";
 import { neoObjects } from "../data/neo-data";
 import type { NeoObject } from "../data/neo-data";
 import { Language, translations } from "../lib/i18n";
+import type { DashboardNeoItem } from "../types/dashboard";
 import { Badge } from "./ui/badge";
 import { Button } from "./ui/button";
 import {
@@ -16,6 +17,7 @@ import {
 interface FlybyTableProps {
   lang: Language;
   items?: NeoObject[];
+  objects?: DashboardNeoItem[];
   selectedId?: string;
   limit?: number;
   onlyHazardous?: boolean;
@@ -26,9 +28,21 @@ interface FlybyTableProps {
   onToggleWatch?: (id: string) => void;
 }
 
+type TableRowItem = {
+  id: string;
+  name: string;
+  date: string;
+  datePL: string;
+  distanceLD: number;
+  velocityKms: number;
+  diameterM: number;
+  isPHA: boolean;
+};
+
 export function FlybyTable({
   lang,
   items,
+  objects,
   selectedId,
   limit,
   onlyHazardous,
@@ -39,20 +53,22 @@ export function FlybyTable({
   onToggleWatch,
 }: FlybyTableProps) {
   const t = translations[lang];
-  const source = items ?? neoObjects;
 
+  const source = objects && objects.length > 0
+    ? objects.map(mapDashboardObject)
+    : (items ?? neoObjects).map(mapMockObject);
 
   const rows = [...source]
-  .filter((item) => !onlyHazardous || item.isPHA)
-  .filter((item) => !closeOnly || item.distanceLD <= 5)
-  .sort((a, b) => {
-    if (!sortByClosest) {
-      return 0;
-    }
+    .filter((item) => !onlyHazardous || item.isPHA)
+    .filter((item) => !closeOnly || item.distanceLD <= 5)
+    .sort((a, b) => {
+      if (!sortByClosest) {
+        return 0;
+      }
 
-    return Number(a.distanceLD) - Number(b.distanceLD);
-  })
-  .slice(0, limit ?? source.length);
+      return Number(a.distanceLD) - Number(b.distanceLD);
+    })
+    .slice(0, limit ?? source.length);
 
   return (
     <div className="overflow-hidden rounded-xl border border-border bg-card/70 backdrop-blur-xl">
@@ -95,16 +111,16 @@ export function FlybyTable({
 
                 <TableCell>
                   <Badge variant={item.distanceLD <= 5 ? "warning" : "outline"}>
-                    {item.distanceLD} LD
+                    {formatNumber(item.distanceLD, 2)} LD
                   </Badge>
                 </TableCell>
 
                 <TableCell className="text-muted-foreground">
-                  {item.velocityKms} km/s
+                  {formatNumber(item.velocityKms, 1)} km/s
                 </TableCell>
 
                 <TableCell className="text-muted-foreground">
-                  ~{item.diameterM} m
+                  ~{formatNumber(item.diameterM, 0)} m
                 </TableCell>
 
                 <TableCell className="text-center">
@@ -155,4 +171,53 @@ export function FlybyTable({
       </Table>
     </div>
   );
+}
+
+function mapDashboardObject(item: DashboardNeoItem): TableRowItem {
+  const date = formatDate(item.closeApproachDate, "en-US");
+  const datePL = formatDate(item.closeApproachDate, "pl-PL");
+
+  return {
+    id: item.id,
+    name: item.name,
+    date,
+    datePL,
+    distanceLD: item.missDistanceLunar,
+    velocityKms: item.velocityKilometersPerSecond,
+    diameterM: item.diameterAverageMeters,
+    isPHA: item.isPotentiallyHazardous,
+  };
+}
+
+function mapMockObject(item: NeoObject): TableRowItem {
+  return {
+    id: item.id,
+    name: item.name,
+    date: item.date,
+    datePL: item.datePL,
+    distanceLD: item.distanceLD,
+    velocityKms: item.velocityKms,
+    diameterM: item.diameterM,
+    isPHA: item.isPHA,
+  };
+}
+
+function formatDate(value: string, locale: string) {
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return value;
+  }
+
+  return date.toLocaleDateString(locale, {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
+}
+
+function formatNumber(value: number, maximumFractionDigits: number) {
+  return new Intl.NumberFormat("en-US", {
+    maximumFractionDigits,
+  }).format(value);
 }

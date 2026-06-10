@@ -1,9 +1,18 @@
-import { useMemo, useState } from "react";
-import { AlertTriangle, Filter, Search, Signal, Zap } from "lucide-react";
-import { neoObjects } from "../data/neo-data";
+import { useEffect, useMemo, useState } from "react";
+import {
+  AlertTriangle,
+  Filter,
+  RefreshCw,
+  Search,
+  Signal,
+  Zap,
+} from "lucide-react";
+import { getDashboardData } from "../services/nearEarthApi";
+import type { DashboardResponse } from "../types/dashboard";
 import { Language, translations } from "../lib/i18n";
 import { FlybyChart } from "./flyby-chart";
 import { FlybyTable } from "./flyby-table";
+import { RadarVisualization } from "./radar-visualization";
 import { ScatterPlot } from "./scatter-plot";
 import { StatsCard } from "./stats-card";
 import { Badge } from "./ui/badge";
@@ -27,105 +36,151 @@ export function FlybysPage({
   onOpenAsteroid,
 }: FlybysPageProps) {
   const t = translations[lang];
+
+  const [dashboardData, setDashboardData] = useState<DashboardResponse | null>(
+    null
+  );
   const [filter, setFilter] = useState<FilterMode>("all");
   const [search, setSearch] = useState("");
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  async function loadData() {
+    try {
+      setIsLoading(true);
+      setError(null);
+
+      const data = await getDashboardData();
+      setDashboardData(data);
+    } catch {
+      setError("Could not load NASA NeoWs data.");
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    loadData();
+  }, []);
+
+  const objects = dashboardData?.objects ?? [];
 
   const filtered = useMemo(() => {
-    return neoObjects
-      .filter((item) => filter !== "close" || item.distanceLD <= 5)
-      .filter((item) => filter !== "pha" || item.isPHA)
+    return objects
+      .filter((item) => filter !== "close" || item.missDistanceLunar <= 5)
+      .filter((item) => filter !== "pha" || item.isPotentiallyHazardous)
       .filter((item) =>
         item.name.toLowerCase().includes(search.toLowerCase())
       );
-  }, [filter, search]);
+  }, [objects, filter, search]);
+
+  const closeObjectsCount = objects.filter(
+    (item) => item.missDistanceLunar <= 5
+  ).length;
+
+  const phaObjectsCount = objects.filter(
+    (item) => item.isPotentiallyHazardous
+  ).length;
+
+  const hintAll =
+    lang === "pl"
+      ? "Wszystkie obiekty NEO zwrócone przez NASA NeoWs dla aktualnego zakresu dat. To lista przelotów blisko Ziemi, a nie lista obiektów zagrażających Ziemi."
+      : "All NEO objects returned by NASA NeoWs for the current date range. This is a list of close approaches, not a list of objects threatening Earth.";
+
+  const hintClose =
+    lang === "pl"
+      ? "Pokazuje obiekty, które mijają Ziemię w odległości do 5 LD. LD oznacza średnią odległość Ziemi od Księżyca."
+      : "Shows objects passing Earth within 5 LD. LD means the average distance between Earth and the Moon.";
+
+  const hintPha =
+    lang === "pl"
+      ? "Pokazuje obiekty oznaczone przez NASA jako PHA. To nie znaczy, że uderzą w Ziemię — oznacza, że warto je monitorować ze względu na rozmiar i orbitę."
+      : "Shows objects marked by NASA as PHA. It does not mean they will hit Earth — it means they are worth monitoring because of size and orbit.";
+
+  const resultsLabel = lang === "pl" ? "Wyniki" : "Results";
+
+  if (isLoading) {
+    return (
+      <div className="flex min-h-[420px] items-center justify-center">
+        <Card className="flex flex-col items-center gap-4 p-8 text-center backdrop-blur-xl">
+          <RefreshCw className="h-8 w-8 animate-spin text-primary" />
+          <div>
+            <p className="text-lg font-semibold text-foreground">
+              Loading NASA flyby data...
+            </p>
+            <p className="text-sm text-muted-foreground">
+              Fetching close approaches from backend.
+            </p>
+          </div>
+        </Card>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex min-h-[420px] items-center justify-center">
+        <Card className="max-w-md p-8 text-center backdrop-blur-xl">
+          <AlertTriangle className="mx-auto mb-4 h-10 w-10 text-destructive" />
+          <h2 className="mb-2 text-xl font-semibold text-foreground">
+            Data loading failed
+          </h2>
+          <p className="mb-5 text-sm text-muted-foreground">{error}</p>
+          <Button onClick={loadData}>
+            <RefreshCw className="h-4 w-4" />
+            Try again
+          </Button>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-8">
       <section>
-        <div className="mb-6 flex flex-col justify-between gap-4 lg:flex-row lg:items-end">
-          <div>
-            <Badge variant="secondary" className="mb-3">
-              <Signal className="h-3.5 w-3.5" />
-              {t.flybyExplorer}
-            </Badge>
+        <Badge variant="secondary" className="mb-3">
+          <Signal className="h-3.5 w-3.5" />
+          {t.flybyExplorer}
+        </Badge>
 
-            <h2 className="text-3xl font-semibold tracking-tight text-foreground">
-              {t.flybys}
-            </h2>
+        <h2 className="text-3xl font-semibold tracking-tight text-foreground">
+          {t.flybys}
+        </h2>
 
-            <p className="mt-2 max-w-2xl text-muted-foreground">
-              {t.heroSubtitle}
-            </p>
-          </div>
-
-          <div className="flex flex-col gap-3 sm:flex-row">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-
-              <Input
-                value={search}
-                onChange={(event) => setSearch(event.target.value)}
-                placeholder={t.searchPlaceholder}
-                className="pl-9 sm:w-[280px]"
-              />
-            </div>
-
-            <Button variant="outline">
-              <Filter className="h-4 w-4" />
-              {t.searchResults}: {filtered.length}
-            </Button>
-          </div>
-        </div>
-
-        <div className="mb-6 flex flex-wrap gap-2">
-          <Button
-            variant={filter === "all" ? "default" : "outline"}
-            size="sm"
-            onClick={() => setFilter("all")}
-          >
-            {t.allObjects}
-          </Button>
-
-          <Button
-            variant={filter === "close" ? "default" : "outline"}
-            size="sm"
-            onClick={() => setFilter("close")}
-          >
-            {t.closeOnly}
-          </Button>
-
-          <Button
-            variant={filter === "pha" ? "default" : "outline"}
-            size="sm"
-            onClick={() => setFilter("pha")}
-          >
-            {t.hazardousOnly}
-          </Button>
-        </div>
+        <p className="mt-2 max-w-2xl text-muted-foreground">
+          {t.heroSubtitle}
+        </p>
       </section>
 
       <section className="grid grid-cols-1 gap-4 md:grid-cols-3">
         <StatsCard
           icon={Signal}
           label={t.allObjects}
-          value={neoObjects.length}
-          subtext={t.trackingAll}
+          value={objects.length}
+          subtext={
+            dashboardData
+              ? `NASA NeoWs: ${dashboardData.startDate} - ${dashboardData.endDate}`
+              : t.trackingAll
+          }
+          hint={hintAll}
         />
 
         <StatsCard
           icon={Zap}
           label={t.closeOnly}
-          value={neoObjects.filter((item) => item.distanceLD <= 5).length}
+          value={closeObjectsCount}
           subtext="≤ 5 LD"
           highlight
+          hint={hintClose}
         />
 
         <StatsCard
           icon={AlertTriangle}
           label={t.hazardousOnly}
-          value={neoObjects.filter((item) => item.isPHA).length}
+          value={phaObjectsCount}
           subtext="NASA PHA flag"
           highlight
+          hint={hintPha}
         />
       </section>
 
@@ -135,7 +190,7 @@ export function FlybysPage({
             {t.flybysOverTime}
           </h3>
 
-          <FlybyChart />
+          <FlybyChart data={dashboardData?.dailyApproaches ?? []} />
         </Card>
 
         <Card className="p-6 backdrop-blur-xl">
@@ -143,14 +198,75 @@ export function FlybysPage({
             {t.distanceVsDate}
           </h3>
 
-          <ScatterPlot />
+          <ScatterPlot objects={filtered} />
+        </Card>
+      </section>
+
+      <section>
+        <RadarVisualization
+          lang={lang}
+          objects={filtered}
+          onSelect={onOpenAsteroid}
+        />
+      </section>
+
+      <section>
+        <Card className="border-white/10 bg-black/70 p-4 backdrop-blur-xl">
+          <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
+            <div className="relative w-full xl:max-w-sm">
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+
+              <Input
+                value={search}
+                onChange={(event) => setSearch(event.target.value)}
+                placeholder={t.searchPlaceholder}
+                className="pl-9"
+              />
+            </div>
+
+            <div className="flex flex-wrap items-center gap-2">
+              <Button
+                variant={filter === "all" ? "default" : "outline"}
+                size="sm"
+                onClick={() => setFilter("all")}
+              >
+                {t.allObjects}
+              </Button>
+
+              <Button
+                variant={filter === "close" ? "default" : "outline"}
+                size="sm"
+                onClick={() => setFilter("close")}
+              >
+                {t.closeOnly}
+              </Button>
+
+              <Button
+                variant={filter === "pha" ? "default" : "outline"}
+                size="sm"
+                onClick={() => setFilter("pha")}
+              >
+                {t.hazardousOnly}
+              </Button>
+
+              <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.035] px-4 py-2 text-sm text-muted-foreground">
+                <Filter className="h-4 w-4" />
+                <span>
+                  {resultsLabel}:{" "}
+                  <span className="font-semibold text-foreground">
+                    {filtered.length}
+                  </span>
+                </span>
+              </div>
+            </div>
+          </div>
         </Card>
       </section>
 
       <section>
         <FlybyTable
           lang={lang}
-          items={filtered}
+          objects={filtered}
           watchlistIds={watchlistIds}
           onToggleWatch={onToggleWatchlist}
           onSelect={onOpenAsteroid}

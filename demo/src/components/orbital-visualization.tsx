@@ -14,7 +14,7 @@ import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import { neoObjects } from "../data/neo-data";
 import { Button } from "./ui/button";
-
+import type { DashboardNeoItem } from "../types/dashboard";
 import sunTexture from "../assets/2k_sun.jpg";
 import sunFlareTexture from "../assets/glow.png";
 import mercuryTexture from "../assets/2k_mercury.jpg";
@@ -131,8 +131,10 @@ type NormalizedAsteroid = {
   longitudeDeg: number;
 };
 
+type AsteroidSource = DashboardNeoItem | any;
+
 interface OrbitalVisualizationProps {
-  apiAsteroids?: any[];
+  apiAsteroids?: AsteroidSource[];
 }
 
 const SIZE_MODE: SizeMode = "visible";
@@ -423,9 +425,9 @@ function createOrbitLine(
 
 function createMoonOrbit(radius: number) {
   const curve = new THREE.EllipseCurve(0, 0, radius, radius, 0, Math.PI * 2);
-const points = curve
-  .getPoints(96)
-  .map((point: THREE.Vector2) => new THREE.Vector3(point.x, 0, point.y));
+  const points = curve
+    .getPoints(96)
+    .map((point) => new THREE.Vector3(point.x, 0, point.y));
 
   const geometry = new THREE.BufferGeometry().setFromPoints(points);
 
@@ -558,61 +560,112 @@ function createAsteroidBelt() {
   return group;
 }
 
-function normalizeApiOrLocalAsteroid(item: any, index: number): NormalizedAsteroid {
-  const id = String(item.id ?? item.neo_reference_id ?? `neo-${index}`);
+function normalizeApiOrLocalAsteroid(item: AsteroidSource, index: number): NormalizedAsteroid {
+  const id = String(item.id ?? item.neo_reference_id ?? item.neoReferenceId ?? `neo-${index}`);
   const name = item.name ?? `NEO ${index + 1}`;
 
-  const estimatedDiameterMin =
-    item.estimated_diameter?.meters?.estimated_diameter_min ??
-    item.diameterM ??
-    100;
+  const estimatedDiameterMin = getNumber(
+    item.estimated_diameter?.meters?.estimated_diameter_min,
+    item.estimatedDiameter?.meters?.estimatedDiameterMin,
+    item.diameterMinMeters,
+    item.diameterM,
+    100
+  );
 
-  const estimatedDiameterMax =
-    item.estimated_diameter?.meters?.estimated_diameter_max ??
-    item.diameterM ??
-    estimatedDiameterMin;
+  const estimatedDiameterMax = getNumber(
+    item.estimated_diameter?.meters?.estimated_diameter_max,
+    item.estimatedDiameter?.meters?.estimatedDiameterMax,
+    item.diameterMaxMeters,
+    item.diameterM,
+    estimatedDiameterMin
+  );
 
-  const diameterM = (estimatedDiameterMin + estimatedDiameterMax) / 2;
+  function getNumber(...values: unknown[]) {
+    for (const value of values) {
+      if (typeof value === "number" && Number.isFinite(value)) {
+        return value;
+      }
+
+      if (typeof value === "string") {
+        const parsed = Number.parseFloat(value);
+
+        if (Number.isFinite(parsed)) {
+          return parsed;
+        }
+      }
+    }
+
+    return 0;
+  }
+
+  const dashboardDiameterAverage = getNumber(item.diameterAverageMeters, 0);
+
+  const diameterM =
+    dashboardDiameterAverage > 0
+      ? dashboardDiameterAverage
+      : (estimatedDiameterMin + estimatedDiameterMax) / 2;
 
   const closeApproach =
     item.close_approach_data?.[0] ??
     item.closeApproachData?.[0] ??
     null;
 
-  const velocityKms =
-    Number(closeApproach?.relative_velocity?.kilometers_per_second) ||
-    Number(item.velocityKms) ||
-    12;
+  const velocityKms = getNumber(
+    closeApproach?.relative_velocity?.kilometers_per_second,
+    closeApproach?.relativeVelocity?.kilometersPerSecond,
+    item.velocityKilometersPerSecond,
+    item.velocityKms,
+    12
+  );
 
-  const distanceLD =
-    Number(closeApproach?.miss_distance?.lunar) ||
-    Number(item.distanceLD) ||
-    8;
+  const distanceLD = getNumber(
+    closeApproach?.miss_distance?.lunar,
+    closeApproach?.missDistance?.lunar,
+    item.missDistanceLunar,
+    item.distanceLD,
+    8
+  );
 
-  const isPHA =
-    Boolean(item.is_potentially_hazardous_asteroid) ||
-    Boolean(item.isPHA);
+  const isPHA = Boolean(
+    item.is_potentially_hazardous_asteroid ??
+    item.isPotentiallyHazardous ??
+    item.isPHA
+  );
 
-  const orbitalData = item.orbital_data ?? {};
-  const rawSemiMajorAxis =
-    Number(orbitalData.semi_major_axis) || 0;
+  const orbitalData = item.orbital_data ?? item.orbitalData ?? {};
+
+  const rawSemiMajorAxis = getNumber(
+    orbitalData.semi_major_axis,
+    orbitalData.semiMajorAxis,
+    item.orbitAU,
+    0
+  );
+
+  const hash = hashString(id + name);
 
   const orbitAU =
     rawSemiMajorAxis > 0
       ? rawSemiMajorAxis
-      : 0.85 + (hashString(id + name) % 1000) / 1000 * 2.5;
+      : 0.75 + ((hash % 1000) / 1000) * 2.65;
 
-  const eccentricity =
-    Number(orbitalData.eccentricity) ||
-    0.05 + ((hashString(name) % 1000) / 1000) * 0.35;
+  const eccentricity = getNumber(
+    orbitalData.eccentricity,
+    item.eccentricity,
+    0.05 + ((hashString(name) % 1000) / 1000) * 0.35
+  );
 
-  const inclinationDeg =
-    Number(orbitalData.inclination) ||
-    ((hashString(id) % 1000) / 1000) * 18;
+  const inclinationDeg = getNumber(
+    orbitalData.inclination,
+    item.inclinationDeg,
+    ((hashString(id) % 1000) / 1000) * 18
+  );
 
-  const longitudeDeg =
-    Number(orbitalData.ascending_node_longitude) ||
-    ((hashString(name + id) % 1000) / 1000) * 360;
+  const longitudeDeg = getNumber(
+    orbitalData.ascending_node_longitude,
+    orbitalData.ascendingNodeLongitude,
+    item.longitudeDeg,
+    ((hashString(name + id) % 1000) / 1000) * 360
+  );
 
   return {
     id,
@@ -695,7 +748,7 @@ export function OrbitalVisualization({
 
 interface SolarSystemSceneProps {
   fullscreen: boolean;
-  apiAsteroids?: any[];
+  apiAsteroids?: AsteroidSource[];
   focusRequest?: FocusRequest | null;
   onOpenFullscreen?: () => void;
   onCloseFullscreen?: () => void;
@@ -1809,7 +1862,7 @@ function SolarSystemScene({
       {!fullscreen && (
         <div className="pointer-events-none absolute bottom-5 right-5 z-10 rounded-2xl border border-white/10 bg-background/65 px-4 py-3 text-xs text-muted-foreground shadow-xl backdrop-blur-xl">
           <p>Asteroid belt: 2.2–3.3 AU</p>
-          <p>NEO asteroids: generated from NASA API or local fallback</p>
+          <p>NEO asteroids: {apiAsteroids?.length ? "live NASA data" : "local fallback"}</p>
         </div>
       )}
     </div>
