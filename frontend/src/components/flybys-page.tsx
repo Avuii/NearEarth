@@ -12,6 +12,7 @@ import type { DashboardResponse } from "../types/dashboard";
 import { Language, translations } from "../lib/i18n";
 import { FlybyChart } from "./flyby-chart";
 import { FlybyTable } from "./flyby-table";
+import { RadarVisualization } from "./radar-visualization";
 import { ScatterPlot } from "./scatter-plot";
 import { StatsCard } from "./stats-card";
 import { Badge } from "./ui/badge";
@@ -199,6 +200,14 @@ export function FlybysPage({
 
           <ScatterPlot objects={filtered} />
         </Card>
+      </section>
+
+      <section>
+        <RadarVisualization
+          lang={lang}
+          objects={filtered}
+          onSelect={onOpenAsteroid}
+        />
       </section>
 
       <section>
