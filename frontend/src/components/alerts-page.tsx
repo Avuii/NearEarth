@@ -1,33 +1,35 @@
 import { useEffect, useMemo, useState } from "react";
 import {
   AlertCircle,
-  BellOff,
+  CheckCircle2,
+  History,
+  Mail,
   Radio,
   RefreshCw,
+  Send,
   Settings,
   ShieldAlert,
 } from "lucide-react";
-import { getDashboardData } from "../services/nearEarthApi";
+import {
+  checkEmailAlerts,
+  getDashboardData,
+  getEmailAlertHistory,
+  type AlertCheckResponse,
+  type NeoAlert,
+} from "../services/nearEarthApi";
 import type { DashboardNeoItem, DashboardResponse } from "../types/dashboard";
-import { Language, translations } from "../lib/i18n";
+import { type Language, translations } from "../lib/i18n";
 import { Badge } from "./ui/badge";
 import { Button } from "./ui/button";
 import { Card } from "./ui/card";
+import { Input } from "./ui/input";
 
 interface AlertsPageProps {
   lang: Language;
 }
 
-type RuleId = "close" | "pha" | "large" | "velocity";
-
-type AlertRule = {
-  id: RuleId;
-  title: string;
-  titlePL: string;
-  text: string;
-  textPL: string;
-  active: boolean;
-};
+type AlertLanguage = "pl" | "en";
+type RuleId = "close" | "pha" | "large";
 
 type AlertItem = {
   id: string;
@@ -40,69 +42,86 @@ type AlertItem = {
   time: string;
 };
 
-const baseRules: AlertRule[] = [
-  {
-    id: "close",
-    title: "Close approach",
-    titlePL: "Bliskie zbliżenie",
-    text: "Distance below 5 LD",
-    textPL: "Odległość poniżej 5 LD",
-    active: true,
-  },
-  {
-    id: "pha",
-    title: "Potentially hazardous",
-    titlePL: "Potencjalnie niebezpieczne",
-    text: "NASA PHA flag enabled",
-    textPL: "Flaga PHA z NASA jest aktywna",
-    active: true,
-  },
-  {
-    id: "large",
-    title: "Large object",
-    titlePL: "Duży obiekt",
-    text: "Diameter above 300 m",
-    textPL: "Średnica powyżej 300 m",
-    active: true,
-  },
-  {
-    id: "velocity",
-    title: "High velocity",
-    titlePL: "Wysoka prędkość",
-    text: "Velocity above 20 km/s",
-    textPL: "Prędkość powyżej 20 km/s",
-    active: true,
-  },
-];
-
 const copy = {
   en: {
     subtitle:
-      "Alert center for close approaches, PHA objects and user-defined monitoring thresholds.",
-    configure: "Configure rules",
-    allAlerts: "All alerts",
+      "Email alert center for close approaches, PHA objects and monitoring thresholds.",
+    configure: "Configure email alerts",
+    allAlerts: "Current alerts",
     highPriority: "High priority",
-    activeRules: "Active rules",
-    muted: "Muted",
-    rules: "Rules",
-    rulesHint: "Click a rule to enable or disable it.",
-    enabled: "ON",
-    disabled: "OFF",
+    sentHistory: "Sent history",
+    lastSent: "Last sent",
+    recentAlerts: "Current NASA alerts",
     noAlerts: "No alerts for the current NASA data range.",
+    emailTitle: "Email notifications",
+    emailSubtitle:
+      "Send email alerts when NASA NeoWs detects objects matching selected rules.",
+    emailAddress: "Email address",
+    alertLanguage: "Alert language",
+    alertRules: "Alert rules",
+    thresholds: "Thresholds",
+    safety: "Safety",
+    veryCloseRule: "Very close NEO",
+    largeRule: "Large NEO",
+    phaRule: "NASA PHA flag",
+    veryCloseDistance: "Very close distance",
+    largeDiameter: "Large object diameter",
+    maxEmails: "Max emails per check",
+    sendButton: "Check and send email alerts",
+    sending: "Checking alerts...",
+    resultTitle: "Last email check",
+    found: "alerts found",
+    sent: "emails sent",
+    skipped: "skipped",
+    failed: "failed",
+    historyTitle: "Sent email history",
+    noHistory: "No sent email alerts yet.",
+    mockHint:
+      "If backend Email:Mode is Mock, the alert will be generated without sending a real email.",
+    validationEmail: "Enter an email address first.",
+    errorGeneric: "Could not send email alerts.",
+    enabled: "Enabled",
+    disabled: "Disabled",
   },
   pl: {
     subtitle:
-      "Centrum alertów dla bliskich zbliżeń, obiektów PHA i progów monitorowania użytkownika.",
-    configure: "Konfiguruj reguły",
-    allAlerts: "Wszystkie alerty",
+      "Centrum alertów e-mail dla bliskich przelotów, obiektów PHA i progów monitorowania.",
+    configure: "Konfiguruj alerty e-mail",
+    allAlerts: "Aktualne alerty",
     highPriority: "Wysoki priorytet",
-    activeRules: "Aktywne reguły",
-    muted: "Wyciszone",
-    rules: "Reguły",
-    rulesHint: "Kliknij regułę, aby ją włączyć albo wyłączyć.",
-    enabled: "ON",
-    disabled: "OFF",
+    sentHistory: "Historia wysyłek",
+    lastSent: "Ostatnio wysłane",
+    recentAlerts: "Aktualne alerty NASA",
     noAlerts: "Brak alertów dla aktualnego zakresu danych NASA.",
+    emailTitle: "Powiadomienia e-mail",
+    emailSubtitle:
+      "Wysyłaj alerty e-mail, gdy NASA NeoWs wykryje obiekty spełniające wybrane reguły.",
+    emailAddress: "Adres e-mail",
+    alertLanguage: "Język alertu",
+    alertRules: "Reguły alertów",
+    thresholds: "Progi",
+    safety: "Bezpieczeństwo",
+    veryCloseRule: "Bardzo bliski obiekt NEO",
+    largeRule: "Duży obiekt NEO",
+    phaRule: "Flaga NASA PHA",
+    veryCloseDistance: "Bardzo bliska odległość",
+    largeDiameter: "Średnica dużego obiektu",
+    maxEmails: "Maksymalnie maili na sprawdzenie",
+    sendButton: "Sprawdź i wyślij alerty e-mail",
+    sending: "Sprawdzanie alertów...",
+    resultTitle: "Ostatnie sprawdzenie",
+    found: "znalezionych alertów",
+    sent: "wysłanych maili",
+    skipped: "pominiętych",
+    failed: "nieudanych",
+    historyTitle: "Historia wysłanych alertów",
+    noHistory: "Brak wysłanych alertów e-mail.",
+    mockHint:
+      "Jeśli backend ma Email:Mode ustawione na Mock, alert zostanie wygenerowany bez realnej wysyłki maila.",
+    validationEmail: "Najpierw wpisz adres e-mail.",
+    errorGeneric: "Nie udało się wysłać alertów e-mail.",
+    enabled: "Włączone",
+    disabled: "Wyłączone",
   },
 };
 
@@ -110,29 +129,49 @@ export function AlertsPage({ lang }: AlertsPageProps) {
   const t = translations[lang];
   const c = copy[lang];
 
-  const [dashboardData, setDashboardData] = useState<DashboardResponse | null>(null);
-  const [rules, setRules] = useState<AlertRule[]>(() => {
-    try {
-      const saved = localStorage.getItem("nearearth-alert-rules");
-
-      if (!saved) {
-        return baseRules;
-      }
-
-      const savedRules = JSON.parse(saved) as AlertRule[];
-
-      return baseRules.map((rule) => ({
-        ...rule,
-        active:
-          savedRules.find((item) => item.id === rule.id)?.active ??
-          rule.active,
-      }));
-    } catch {
-      return baseRules;
-    }
+  const [dashboardData, setDashboardData] = useState<DashboardResponse | null>(
+    null
+  );
+  const [email, setEmail] = useState(() => {
+    return localStorage.getItem("nearearth-alert-email") ?? "";
   });
+  const [alertLanguage, setAlertLanguage] = useState<AlertLanguage>(() => {
+    const saved = localStorage.getItem("nearearth-alert-language");
+
+    if (saved === "pl" || saved === "en") {
+      return saved;
+    }
+
+    return lang;
+  });
+  const [enableVeryClose, setEnableVeryClose] = useState(() => {
+    return localStorage.getItem("nearearth-alert-very-close") !== "false";
+  });
+  const [enableLargeObject, setEnableLargeObject] = useState(() => {
+    return localStorage.getItem("nearearth-alert-large") !== "false";
+  });
+  const [enablePotentiallyHazardous, setEnablePotentiallyHazardous] = useState(
+    () => {
+      return localStorage.getItem("nearearth-alert-pha") !== "false";
+    }
+  );
+  const [veryCloseMaxLd, setVeryCloseMaxLd] = useState(() => {
+    return Number(localStorage.getItem("nearearth-alert-close-ld") ?? 5);
+  });
+  const [largeMinDiameterMeters, setLargeMinDiameterMeters] = useState(() => {
+    return Number(localStorage.getItem("nearearth-alert-large-meter") ?? 300);
+  });
+  const [maxEmailsPerCheck, setMaxEmailsPerCheck] = useState(() => {
+    return Number(localStorage.getItem("nearearth-alert-max-emails") ?? 1);
+  });
+  const [history, setHistory] = useState<NeoAlert[]>([]);
+  const [checkResult, setCheckResult] = useState<AlertCheckResponse | null>(
+    null
+  );
   const [isLoading, setIsLoading] = useState(true);
+  const [isChecking, setIsChecking] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [formError, setFormError] = useState<string | null>(null);
 
   async function loadData() {
     try {
@@ -141,10 +180,61 @@ export function AlertsPage({ lang }: AlertsPageProps) {
 
       const data = await getDashboardData();
       setDashboardData(data);
+
+      try {
+        const alertHistory = await getEmailAlertHistory();
+        setHistory(alertHistory);
+      } catch {
+        setHistory([]);
+      }
     } catch {
       setError("Could not load NASA NeoWs alerts.");
     } finally {
       setIsLoading(false);
+    }
+  }
+
+  async function refreshHistory() {
+    try {
+      const alertHistory = await getEmailAlertHistory();
+      setHistory(alertHistory);
+    } catch {
+      setHistory([]);
+    }
+  }
+
+  async function handleSendAlerts() {
+    if (!email.trim()) {
+      setFormError(c.validationEmail);
+      return;
+    }
+
+    try {
+      setIsChecking(true);
+      setFormError(null);
+
+      const result = await checkEmailAlerts({
+        email: email.trim(),
+        language: alertLanguage,
+        enableVeryClose,
+        enableLargeObject,
+        enablePotentiallyHazardous,
+        veryCloseMaxLd,
+        largeMinDiameterMeters,
+        days: 7,
+        maxEmailsPerCheck,
+      });
+
+      setCheckResult(result);
+      await refreshHistory();
+    } catch (err) {
+      if (err instanceof Error) {
+        setFormError(err.message || c.errorGeneric);
+      } else {
+        setFormError(c.errorGeneric);
+      }
+    } finally {
+      setIsChecking(false);
     }
   }
 
@@ -153,37 +243,77 @@ export function AlertsPage({ lang }: AlertsPageProps) {
   }, []);
 
   useEffect(() => {
-    localStorage.setItem("nearearth-alert-rules", JSON.stringify(rules));
-  }, [rules]);
+    localStorage.setItem("nearearth-alert-email", email);
+  }, [email]);
 
-  const activeRules = useMemo(
-    () => rules.filter((rule) => rule.active).length,
-    [rules]
-  );
+  useEffect(() => {
+    localStorage.setItem("nearearth-alert-language", alertLanguage);
+  }, [alertLanguage]);
 
-  const mutedRules = rules.length - activeRules;
+  useEffect(() => {
+    localStorage.setItem("nearearth-alert-very-close", String(enableVeryClose));
+  }, [enableVeryClose]);
+
+  useEffect(() => {
+    localStorage.setItem("nearearth-alert-large", String(enableLargeObject));
+  }, [enableLargeObject]);
+
+  useEffect(() => {
+    localStorage.setItem(
+      "nearearth-alert-pha",
+      String(enablePotentiallyHazardous)
+    );
+  }, [enablePotentiallyHazardous]);
+
+  useEffect(() => {
+    localStorage.setItem("nearearth-alert-close-ld", String(veryCloseMaxLd));
+  }, [veryCloseMaxLd]);
+
+  useEffect(() => {
+    localStorage.setItem(
+      "nearearth-alert-large-meter",
+      String(largeMinDiameterMeters)
+    );
+  }, [largeMinDiameterMeters]);
+
+  useEffect(() => {
+    localStorage.setItem(
+      "nearearth-alert-max-emails",
+      String(maxEmailsPerCheck)
+    );
+  }, [maxEmailsPerCheck]);
 
   const currentAlerts = useMemo(() => {
-    return buildAlerts(dashboardData?.objects ?? [], rules);
-  }, [dashboardData, rules]);
+    return buildAlerts(dashboardData?.objects ?? [], {
+      enableVeryClose,
+      enableLargeObject,
+      enablePotentiallyHazardous,
+      veryCloseMaxLd,
+      largeMinDiameterMeters,
+    });
+  }, [
+    dashboardData,
+    enableVeryClose,
+    enableLargeObject,
+    enablePotentiallyHazardous,
+    veryCloseMaxLd,
+    largeMinDiameterMeters,
+  ]);
 
   const highPriority = currentAlerts.filter(
     (alert) => alert.level === "high" || alert.level === "critical"
   ).length;
 
-  function toggleRule(id: RuleId) {
-    setRules((current) =>
-      current.map((rule) =>
-        rule.id === id ? { ...rule, active: !rule.active } : rule
-      )
-    );
-  }
+  const failedCount =
+    checkResult?.results.filter((item) => !item.success && !item.skipped)
+      .length ?? 0;
 
   if (isLoading) {
     return (
       <div className="flex min-h-[420px] items-center justify-center">
         <Card className="flex flex-col items-center gap-4 p-8 text-center backdrop-blur-xl">
           <RefreshCw className="h-8 w-8 animate-spin text-primary" />
+
           <div>
             <p className="text-lg font-semibold text-foreground">
               Loading NASA alerts...
@@ -202,10 +332,13 @@ export function AlertsPage({ lang }: AlertsPageProps) {
       <div className="flex min-h-[420px] items-center justify-center">
         <Card className="max-w-md p-8 text-center backdrop-blur-xl">
           <AlertCircle className="mx-auto mb-4 h-10 w-10 text-destructive" />
+
           <h2 className="mb-2 text-xl font-semibold text-foreground">
             Alerts loading failed
           </h2>
+
           <p className="mb-5 text-sm text-muted-foreground">{error}</p>
+
           <Button onClick={loadData}>
             <RefreshCw className="h-4 w-4" />
             Try again
@@ -237,7 +370,7 @@ export function AlertsPage({ lang }: AlertsPageProps) {
           variant="outline"
           onClick={() =>
             document
-              .getElementById("alert-rules")
+              .getElementById("email-alerts")
               ?.scrollIntoView({ behavior: "smooth", block: "center" })
           }
         >
@@ -249,14 +382,14 @@ export function AlertsPage({ lang }: AlertsPageProps) {
       <section className="grid grid-cols-1 gap-4 md:grid-cols-4">
         <Metric label={c.allAlerts} value={currentAlerts.length} />
         <Metric label={c.highPriority} value={highPriority} />
-        <Metric label={c.activeRules} value={activeRules} />
-        <Metric label={c.muted} value={mutedRules} />
+        <Metric label={c.sentHistory} value={history.length} />
+        <Metric label={c.lastSent} value={checkResult?.sentCount ?? 0} />
       </section>
 
-      <section className="grid grid-cols-1 gap-6 xl:grid-cols-[1fr_0.8fr]">
+      <section className="grid grid-cols-1 gap-6 xl:grid-cols-[1fr_0.95fr]">
         <Card className="border-white/10 bg-black/70 p-6 backdrop-blur-xl">
           <h3 className="mb-5 text-lg font-semibold text-foreground">
-            {t.recentAlerts}
+            {c.recentAlerts}
           </h3>
 
           <div className="space-y-4">
@@ -306,39 +439,223 @@ export function AlertsPage({ lang }: AlertsPageProps) {
         </Card>
 
         <Card
-          id="alert-rules"
+          id="email-alerts"
           className="scroll-mt-28 border-white/10 bg-black/70 p-6 backdrop-blur-xl"
         >
           <div className="mb-5 flex items-start justify-between gap-4">
             <div>
-              <h3 className="text-lg font-semibold text-foreground">
-                {c.rules}
+              <h3 className="flex items-center gap-2 text-lg font-semibold text-foreground">
+                <Mail className="h-5 w-5 text-primary" />
+                {c.emailTitle}
               </h3>
 
               <p className="mt-1 text-sm text-muted-foreground">
-                {c.rulesHint}
+                {c.emailSubtitle}
               </p>
             </div>
 
-            <Badge variant={mutedRules > 0 ? "warning" : "success"}>
-              <BellOff className="h-3.5 w-3.5" />
-              {mutedRules} {c.muted}
+            <Badge variant="success">
+              <CheckCircle2 className="h-3.5 w-3.5" />
+              Email
             </Badge>
           </div>
 
-          <div className="space-y-3">
-            {rules.map((rule) => (
-              <Rule
-                key={rule.id}
-                title={lang === "pl" ? rule.titlePL : rule.title}
-                text={lang === "pl" ? rule.textPL : rule.text}
-                active={rule.active}
-                enabledLabel={c.enabled}
-                disabledLabel={c.disabled}
-                onClick={() => toggleRule(rule.id)}
+          <div className="space-y-5">
+            <div>
+              <label className="mb-2 block text-sm font-medium text-foreground">
+                {c.emailAddress}
+              </label>
+
+              <Input
+                type="email"
+                value={email}
+                onChange={(event) => setEmail(event.target.value)}
+                placeholder="name@example.com"
               />
-            ))}
+            </div>
+
+            <div>
+              <label className="mb-2 block text-sm font-medium text-foreground">
+                {c.alertLanguage}
+              </label>
+
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  type="button"
+                  onClick={() => setAlertLanguage("en")}
+                  className={`rounded-xl border px-4 py-3 text-sm transition ${
+                    alertLanguage === "en"
+                      ? "border-cyan-300/50 bg-cyan-300/15 text-cyan-100"
+                      : "border-white/10 bg-white/[0.035] text-muted-foreground hover:bg-white/[0.06]"
+                  }`}
+                >
+                  English
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setAlertLanguage("pl")}
+                  className={`rounded-xl border px-4 py-3 text-sm transition ${
+                    alertLanguage === "pl"
+                      ? "border-cyan-300/50 bg-cyan-300/15 text-cyan-100"
+                      : "border-white/10 bg-white/[0.035] text-muted-foreground hover:bg-white/[0.06]"
+                  }`}
+                >
+                  Polski
+                </button>
+              </div>
+            </div>
+
+            <div>
+              <p className="mb-3 text-sm font-medium text-foreground">
+                {c.alertRules}
+              </p>
+
+              <div className="space-y-2">
+                <RuleToggle
+                  label={c.veryCloseRule}
+                  checked={enableVeryClose}
+                  onChange={setEnableVeryClose}
+                />
+
+                <RuleToggle
+                  label={c.largeRule}
+                  checked={enableLargeObject}
+                  onChange={setEnableLargeObject}
+                />
+
+                <RuleToggle
+                  label={c.phaRule}
+                  checked={enablePotentiallyHazardous}
+                  onChange={setEnablePotentiallyHazardous}
+                />
+              </div>
+            </div>
+
+            <div>
+              <p className="mb-3 text-sm font-medium text-foreground">
+                {c.thresholds}
+              </p>
+
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                <NumberField
+                  label={`${c.veryCloseDistance} (LD)`}
+                  value={veryCloseMaxLd}
+                  min={1}
+                  max={50}
+                  step={1}
+                  onChange={setVeryCloseMaxLd}
+                />
+
+                <NumberField
+                  label={`${c.largeDiameter} (m)`}
+                  value={largeMinDiameterMeters}
+                  min={50}
+                  max={5000}
+                  step={50}
+                  onChange={setLargeMinDiameterMeters}
+                />
+              </div>
+            </div>
+
+            <div>
+              <p className="mb-3 text-sm font-medium text-foreground">
+                {c.safety}
+              </p>
+
+              <NumberField
+                label={c.maxEmails}
+                value={maxEmailsPerCheck}
+                min={1}
+                max={20}
+                step={1}
+                onChange={setMaxEmailsPerCheck}
+              />
+            </div>
+
+            <div className="rounded-xl border border-cyan-300/15 bg-cyan-300/5 p-4 text-sm leading-relaxed text-muted-foreground">
+              {c.mockHint}
+            </div>
+
+            {formError && (
+              <div className="rounded-xl border border-red-400/20 bg-red-500/10 p-4 text-sm text-red-200">
+                {formError}
+              </div>
+            )}
+
+            <Button
+              className="w-full"
+              onClick={handleSendAlerts}
+              disabled={isChecking}
+            >
+              {isChecking ? (
+                <RefreshCw className="h-4 w-4 animate-spin" />
+              ) : (
+                <Send className="h-4 w-4" />
+              )}
+              {isChecking ? c.sending : c.sendButton}
+            </Button>
+
+            {checkResult && (
+              <div className="rounded-2xl border border-white/10 bg-white/[0.035] p-4">
+                <p className="mb-3 font-medium text-foreground">
+                  {c.resultTitle}
+                </p>
+
+                <div className="grid grid-cols-2 gap-3 text-sm">
+                  <ResultItem
+                    label={c.found}
+                    value={checkResult.totalAlertsFound}
+                  />
+
+                  <ResultItem label={c.sent} value={checkResult.sentCount} />
+
+                  <ResultItem
+                    label={c.skipped}
+                    value={checkResult.skippedCount}
+                  />
+
+                  <ResultItem label={c.failed} value={failedCount} />
+                </div>
+              </div>
+            )}
           </div>
+        </Card>
+      </section>
+
+      <section>
+        <Card className="border-white/10 bg-black/70 p-6 backdrop-blur-xl">
+          <div className="mb-5 flex items-center justify-between gap-4">
+            <div>
+              <h3 className="flex items-center gap-2 text-lg font-semibold text-foreground">
+                <History className="h-5 w-5 text-primary" />
+                {c.historyTitle}
+              </h3>
+
+              <p className="mt-1 text-sm text-muted-foreground">
+                {lang === "pl"
+                  ? "Lista alertów e-mail zapisanych przez backend w tej sesji."
+                  : "Email alerts stored by the backend during this session."}
+              </p>
+            </div>
+
+            <Button variant="outline" size="sm" onClick={refreshHistory}>
+              <RefreshCw className="h-4 w-4" />
+              Refresh
+            </Button>
+          </div>
+
+          {history.length === 0 ? (
+            <div className="rounded-xl border border-white/10 bg-white/[0.035] p-5 text-sm text-muted-foreground">
+              {c.noHistory}
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
+              {history.map((alert) => (
+                <HistoryItem key={alert.alertId} alert={alert} lang={lang} />
+              ))}
+            </div>
+          )}
         </Card>
       </section>
     </div>
@@ -347,25 +664,27 @@ export function AlertsPage({ lang }: AlertsPageProps) {
 
 function buildAlerts(
   objects: DashboardNeoItem[],
-  rules: AlertRule[]
+  settings: {
+    enableVeryClose: boolean;
+    enableLargeObject: boolean;
+    enablePotentiallyHazardous: boolean;
+    veryCloseMaxLd: number;
+    largeMinDiameterMeters: number;
+  }
 ): AlertItem[] {
-  const enabled = rules
-    .filter((rule) => rule.active)
-    .map((rule) => rule.id);
-
   const result: AlertItem[] = [];
 
-  if (enabled.includes("close")) {
+  if (settings.enableVeryClose) {
     objects
-      .filter((item) => item.missDistanceLunar <= 5)
+      .filter((item) => item.missDistanceLunar <= settings.veryCloseMaxLd)
       .sort((a, b) => a.missDistanceLunar - b.missDistanceLunar)
       .slice(0, 6)
       .forEach((item) => {
         result.push({
           id: `close-${item.id}`,
           ruleId: "close",
-          title: "Close approach below 5 LD",
-          titlePL: "Bliskie zbliżenie poniżej 5 LD",
+          title: `Close approach below ${settings.veryCloseMaxLd} LD`,
+          titlePL: `Bliskie zbliżenie poniżej ${settings.veryCloseMaxLd} LD`,
           description: `${item.name} will pass at ${formatNumber(
             item.missDistanceLunar,
             2
@@ -380,7 +699,7 @@ function buildAlerts(
       });
   }
 
-  if (enabled.includes("pha")) {
+  if (settings.enablePotentiallyHazardous) {
     objects
       .filter((item) => item.isPotentiallyHazardous)
       .sort((a, b) => a.missDistanceLunar - b.missDistanceLunar)
@@ -398,9 +717,12 @@ function buildAlerts(
       });
   }
 
-  if (enabled.includes("large")) {
+  if (settings.enableLargeObject) {
     objects
-      .filter((item) => item.diameterAverageMeters >= 300)
+      .filter(
+        (item) =>
+          item.diameterAverageMeters >= settings.largeMinDiameterMeters
+      )
       .sort((a, b) => b.diameterAverageMeters - a.diameterAverageMeters)
       .slice(0, 6)
       .forEach((item) => {
@@ -423,34 +745,6 @@ function buildAlerts(
       });
   }
 
-  if (enabled.includes("velocity")) {
-    objects
-      .filter((item) => item.velocityKilometersPerSecond >= 20)
-      .sort(
-        (a, b) =>
-          b.velocityKilometersPerSecond - a.velocityKilometersPerSecond
-      )
-      .slice(0, 6)
-      .forEach((item) => {
-        result.push({
-          id: `fast-${item.id}`,
-          ruleId: "velocity",
-          title: "High velocity object",
-          titlePL: "Obiekt o wysokiej prędkości",
-          description: `${item.name} is moving at ${formatNumber(
-            item.velocityKilometersPerSecond,
-            1
-          )} km/s.`,
-          descriptionPL: `${item.name} porusza się z prędkością ${formatNumber(
-            item.velocityKilometersPerSecond,
-            1
-          )} km/s.`,
-          level: "medium",
-          time: formatDate(item.closeApproachDate),
-        });
-      });
-  }
-
   return result.slice(0, 15);
 }
 
@@ -463,39 +757,111 @@ function Metric({ label, value }: { label: string; value: number }) {
   );
 }
 
-function Rule({
-  title,
-  text,
-  active,
-  enabledLabel,
-  disabledLabel,
-  onClick,
+function RuleToggle({
+  label,
+  checked,
+  onChange,
 }: {
-  title: string;
-  text: string;
-  active: boolean;
-  enabledLabel: string;
-  disabledLabel: string;
-  onClick: () => void;
+  label: string;
+  checked: boolean;
+  onChange: (value: boolean) => void;
 }) {
   return (
     <button
+      type="button"
+      onClick={() => onChange(!checked)}
       className="flex w-full items-center justify-between rounded-xl border border-white/10 bg-white/[0.035] p-4 text-left transition duration-200 hover:border-cyan-300/30 hover:bg-white/[0.06] active:scale-[0.99]"
-      onClick={onClick}
     >
       <div className="flex items-center gap-3">
         <ShieldAlert className="h-4 w-4 text-primary" />
 
-        <div>
-          <p className="font-medium text-foreground">{title}</p>
-          <p className="text-sm text-muted-foreground">{text}</p>
-        </div>
+        <p className="font-medium text-foreground">{label}</p>
       </div>
 
-      <Badge variant={active ? "success" : "outline"}>
-        {active ? enabledLabel : disabledLabel}
-      </Badge>
+      <span
+        className={`flex h-6 w-11 items-center rounded-full p-1 transition ${
+          checked ? "bg-emerald-400/80" : "bg-white/15"
+        }`}
+      >
+        <span
+          className={`h-4 w-4 rounded-full bg-white transition ${
+            checked ? "translate-x-5" : "translate-x-0"
+          }`}
+        />
+      </span>
     </button>
+  );
+}
+
+function NumberField({
+  label,
+  value,
+  min,
+  max,
+  step,
+  onChange,
+}: {
+  label: string;
+  value: number;
+  min: number;
+  max: number;
+  step: number;
+  onChange: (value: number) => void;
+}) {
+  return (
+    <div>
+      <label className="mb-2 block text-xs text-muted-foreground">
+        {label}
+      </label>
+
+      <Input
+        type="number"
+        min={min}
+        max={max}
+        step={step}
+        value={value}
+        onChange={(event) => onChange(Number(event.target.value))}
+      />
+    </div>
+  );
+}
+
+function ResultItem({ label, value }: { label: string; value: number }) {
+  return (
+    <div className="rounded-xl border border-white/10 bg-black/30 p-3">
+      <p className="text-xs text-muted-foreground">{label}</p>
+      <p className="mt-1 text-xl font-semibold text-foreground">{value}</p>
+    </div>
+  );
+}
+
+function HistoryItem({ alert, lang }: { alert: NeoAlert; lang: Language }) {
+  const reason = lang === "pl" ? alert.reasonPl : alert.reasonEn;
+
+  return (
+    <div className="rounded-xl border border-white/10 bg-white/[0.035] p-4">
+      <div className="mb-2 flex items-start justify-between gap-3">
+        <div>
+          <p className="font-medium text-foreground">{alert.objectName}</p>
+          <p className="mt-1 text-xs text-muted-foreground">
+            ID: {alert.objectId}
+          </p>
+        </div>
+
+        <Badge variant={alert.severity === "High" ? "danger" : "warning"}>
+          {alert.severity}
+        </Badge>
+      </div>
+
+      <p className="text-sm text-muted-foreground">{reason}</p>
+
+      <div className="mt-3 grid grid-cols-2 gap-2 text-xs text-muted-foreground">
+        <p>{alert.closeApproachDate}</p>
+        <p>{formatNumber(alert.missDistanceLunar, 2)} LD</p>
+        <p>~{formatNumber(alert.diameterAverageMeters, 0)} m</p>
+        <p>{formatNumber(alert.velocityKilometersPerSecond, 1)} km/s</p>
+      </div>
+    </div>
   );
 }
 
