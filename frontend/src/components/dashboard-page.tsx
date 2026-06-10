@@ -101,11 +101,41 @@ export function DashboardPage({
 
   function getObjectSubtext(object: DashboardNeoItem | null, metric: string) {
     if (!object) {
-      return "No data available";
+      return lang === "pl" ? "Brak danych" : "No data available";
     }
 
     return `${object.name} ${metric}`;
   }
+
+  const hintNext7Days =
+    lang === "pl"
+      ? "Liczba obiektów NEO znalezionych przez NASA NeoWs w zakresie najbliższych 7 dni. Jeden obiekt może mieć zbliżenie w określonym dniu, ale nie oznacza to zagrożenia."
+      : "Number of NEO objects found by NASA NeoWs within the next 7 days. A listed object has a close approach in this period, but it does not mean danger.";
+
+  const hintNext30Days =
+    lang === "pl"
+      ? "Liczba obiektów NEO zebrana z kilku zapytań NASA NeoWs dla zakresu 30 dni. NASA feed działa krótkimi zakresami, więc backend łączy wyniki."
+      : "Number of NEO objects collected from multiple NASA NeoWs requests for a 30-day range. The NASA feed works with short date ranges, so the backend combines results.";
+
+  const hintClosest =
+    lang === "pl"
+      ? "Najbliższy przelot w aktualnym zestawie danych. LD oznacza lunar distance, czyli średnią odległość Ziemi od Księżyca."
+      : "Closest flyby in the current dataset. LD means lunar distance, the average distance between Earth and the Moon.";
+
+  const hintLargest =
+    lang === "pl"
+      ? "Największy obiekt w aktualnym zestawie danych. Średnica asteroidy jest zwykle szacowana, dlatego traktuj ją jako przybliżenie."
+      : "Largest object in the current dataset. Asteroid diameter is usually estimated, so treat it as an approximate value.";
+
+  const hintFastest =
+    lang === "pl"
+      ? "Najszybszy obiekt względem Ziemi podczas zbliżenia. To prędkość względna, a nie całkowita prędkość obiektu w kosmosie."
+      : "Fastest object relative to Earth during close approach. This is relative velocity, not the object's total speed through space.";
+
+  const hintPha =
+    lang === "pl"
+      ? "PHA oznacza potencjalnie niebezpieczną asteroidę. To nie znaczy, że obiekt uderzy w Ziemię — oznacza, że jest monitorowany ze względu na rozmiar i orbitę."
+      : "PHA means Potentially Hazardous Asteroid. It does not mean the object will hit Earth — it means it is monitored because of its size and orbit.";
 
   if (isLoading) {
     return (
@@ -219,6 +249,7 @@ export function DashboardPage({
           label={t.objectsNext7Days}
           value={summary.totalObjects}
           subtext={`NASA NeoWs: ${dashboardData.startDate} - ${dashboardData.endDate}`}
+          hint={hintNext7Days}
         />
 
         <StatsCard
@@ -228,8 +259,11 @@ export function DashboardPage({
           subtext={
             dashboard30Data
               ? `NASA NeoWs: ${dashboard30Data.startDate} - ${dashboard30Data.endDate}`
-              : "30-day aggregation unavailable"
+              : lang === "pl"
+                ? "Agregacja 30 dni niedostępna"
+                : "30-day aggregation unavailable"
           }
+          hint={hintNext30Days}
         />
 
         <StatsCard
@@ -238,6 +272,7 @@ export function DashboardPage({
           value={closestDistance}
           subtext={closestSubtext}
           highlight
+          hint={hintClosest}
         />
 
         <StatsCard
@@ -245,6 +280,7 @@ export function DashboardPage({
           label={t.largestObject}
           value={largestDiameter}
           subtext={largestSubtext}
+          hint={hintLargest}
         />
 
         <StatsCard
@@ -252,6 +288,7 @@ export function DashboardPage({
           label={t.fastestObject}
           value={fastestVelocity}
           subtext={fastestSubtext}
+          hint={hintFastest}
         />
 
         <StatsCard
@@ -260,6 +297,7 @@ export function DashboardPage({
           value={summary.hazardousObjects}
           subtext={t.phaObjectsTracked}
           highlight
+          hint={hintPha}
         />
       </section>
 
