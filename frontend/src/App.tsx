@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Activity, Languages, Search, User } from "lucide-react";
 import logo from "./assets/logo.png";
+import { EducationCard } from "./components/education-card";
 import { StarfieldBackground } from "./components/starfield-background";
 import { AlertsPage } from "./components/alerts-page";
 import { AsteroidDetailsCard } from "./components/asteroid-details-card";
@@ -14,7 +15,7 @@ import { Input } from "./components/ui/input";
 import { TabsList, TabsTrigger } from "./components/ui/tabs";
 import { Language, translations } from "./lib/i18n";
 
-type View = "dashboard" | "flybys" | "watchlist" | "alerts" | "insights";
+type View = "dashboard" | "flybys" | "watchlist" | "alerts" | "insights" | "edu";
 
 export default function App() {
   const [lang, setLang] = useState<Language>("en");
@@ -109,7 +110,25 @@ export default function App() {
   if (activeView === "insights") {
     content = <InsightsPage lang={lang} />;
   }
+  if (activeView === "education") {
+    content = (
+      <div className="space-y-8">
+        <section>
+          <h2 className="text-3xl font-semibold tracking-tight text-foreground">
+            {lang === "pl" ? "Edukacja" : "Education"}
+          </h2>
 
+          <p className="mt-2 max-w-2xl text-muted-foreground">
+            {lang === "pl"
+              ? "Proste wyjaśnienia najważniejszych pojęć używanych w aplikacji."
+              : "Simple explanations of the most important terms used in the app."}
+          </p>
+        </section>
+
+        <EducationCard lang={lang} />
+      </div>
+    );
+  }
   return (
     <div className="dark min-h-screen w-full overflow-x-hidden bg-gradient-to-br from-background via-background to-slate-950 text-foreground">
       <StarfieldBackground />
@@ -183,6 +202,13 @@ export default function App() {
                   >
                     {t.insights}
                   </TabsTrigger>
+                  <TabsTrigger
+                    value="education"
+                    activeValue={activeView}
+                    onValueChange={(value) => setActiveView(value as View)}
+                  >
+                    {lang === "pl" ? "Edu" : "Edu"}
+                  </TabsTrigger>
                 </TabsList>
               </div>
 
@@ -220,7 +246,9 @@ export default function App() {
           </div>
         </header>
 
-        <main className="mx-auto max-w-7xl px-5 py-8">{content}</main>
+       <main className="relative z-10 mx-auto w-full max-w-[1020px] px-5 py-8 lg:px-8">
+  {content}
+</main>
 
         <footer className="mt-16 border-t border-border bg-background/85 backdrop-blur-xl">
           <div className="mx-auto flex max-w-7xl flex-col justify-between gap-2 px-5 py-6 text-sm text-muted-foreground md:flex-row">
