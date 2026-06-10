@@ -54,7 +54,7 @@ export function InfoHint({ text }: InfoHintProps) {
         onMouseLeave={closeTooltip}
         onFocus={openTooltip}
         onBlur={closeTooltip}
-        className="inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-full border border-cyan-300/30 bg-cyan-300/10 text-cyan-300 transition hover:border-cyan-300/60 hover:bg-cyan-300/15"
+        className="inline-flex h-4 w-4 shrink-0 items-center justify-center text-cyan-300 transition hover:text-cyan-200"
         aria-label="Info"
       >
         <Info className="h-3 w-3" />
