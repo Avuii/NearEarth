@@ -23,7 +23,7 @@
   <img src="https://img.shields.io/badge/backend-ASP.NET%20Core-512BD4?style=for-the-badge" />
 </p>
 <p align="center">
-<img width="800" alt="image" src="https://github.com/user-attachments/assets/f93240ad-2c71-4c62-9da9-f59ffbdb5541" />
+<img width="800" alt="image" src="https://github.com/user-attachments/assets/4a6ce557-6267-4185-a8a2-255503045016" />
 </p>
 ---
 
