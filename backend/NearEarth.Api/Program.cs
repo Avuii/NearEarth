@@ -8,8 +8,12 @@ builder.Services.Configure<NasaOptions>(builder.Configuration.GetSection("Nasa")
 builder.Services.AddMemoryCache();
 
 builder.Services.AddHttpClient<NasaNeoWsService>();
+builder.Services.AddHttpClient<EmailNotificationSender>();
 
 builder.Services.AddScoped<DashboardService>();
+builder.Services.AddScoped<AlertEvaluationService>();
+builder.Services.AddScoped<NotificationService>();
+builder.Services.AddSingleton<NotificationHistoryService>();
 
 builder.Services.AddControllers();
 
