@@ -22,3 +22,33 @@ select,
 textarea {
   font: inherit;
 }
+.education-tabs-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(34, 211, 238, 0.45) rgba(255, 255, 255, 0.04);
+}
+
+.education-tabs-scroll::-webkit-scrollbar {
+  height: 6px;
+}
+
+.education-tabs-scroll::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: 999px;
+}
+
+.education-tabs-scroll::-webkit-scrollbar-thumb {
+  background: linear-gradient(
+    90deg,
+    rgba(34, 211, 238, 0.35),
+    rgba(103, 232, 249, 0.75)
+  );
+  border-radius: 999px;
+}
+
+.education-tabs-scroll::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(
+    90deg,
+    rgba(34, 211, 238, 0.55),
+    rgba(103, 232, 249, 0.95)
+  );
+}

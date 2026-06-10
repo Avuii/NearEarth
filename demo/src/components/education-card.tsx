@@ -1257,7 +1257,7 @@ export function EducationCard({ lang }: EducationCardProps) {
           </p>
         </div>
 
-        <div className="mb-6 overflow-x-auto rounded-2xl border border-white/10 bg-white/[0.025] p-1">
+        <div className="education-tabs-scroll mb-6 overflow-x-auto rounded-2xl border border-white/10 bg-white/[0.025] p-1 pb-3">
           <div className="flex min-w-max gap-1">
             {c.categories.map((category) => (
               <CategoryButton
@@ -1369,9 +1369,9 @@ function CategoryButton({
       type="button"
       onClick={onClick}
       className={
-        active
-          ? "flex items-center gap-2 rounded-xl bg-cyan-300 px-4 py-2.5 text-sm font-medium text-slate-950 shadow-[0_0_24px_rgba(34,211,238,0.22)] transition duration-200"
-          : "flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-medium text-muted-foreground transition duration-200 hover:bg-white/[0.06] hover:text-foreground"
+       active
+  ? "flex items-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground shadow-lg shadow-primary/10 transition duration-200"
+  : "flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-medium text-muted-foreground transition duration-200 hover:bg-white/[0.06] hover:text-foreground"
       }
     >
       <Icon className="h-4 w-4" />
