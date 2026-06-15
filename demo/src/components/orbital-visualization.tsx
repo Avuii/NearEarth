@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import {
   Crosshair,
   List,
@@ -714,11 +715,15 @@ export function OrbitalVisualization({
   useEffect(() => {
     if (!isFullscreen) return;
 
-    const previousOverflow = document.body.style.overflow;
+    const previousBodyOverflow = document.body.style.overflow;
+    const previousHtmlOverflow = document.documentElement.style.overflow;
+
     document.body.style.overflow = "hidden";
+    document.documentElement.style.overflow = "hidden";
 
     return () => {
-      document.body.style.overflow = previousOverflow;
+      document.body.style.overflow = previousBodyOverflow;
+      document.documentElement.style.overflow = previousHtmlOverflow;
     };
   }, [isFullscreen]);
 
@@ -730,18 +735,20 @@ export function OrbitalVisualization({
         onOpenFullscreen={() => setIsFullscreen(true)}
       />
 
-      {isFullscreen && (
-        <div className="fixed inset-0 z-[120] bg-black p-4">
-          <div className="relative h-full overflow-hidden rounded-3xl border border-white/10 bg-black shadow-[0_30px_120px_rgba(0,0,0,0.75)]">
-            <SolarSystemScene
-              fullscreen
-              apiAsteroids={apiAsteroids}
-              focusRequest={focusRequest}
-              onCloseFullscreen={() => setIsFullscreen(false)}
-            />
-          </div>
-        </div>
-      )}
+      {isFullscreen &&
+        createPortal(
+          <div className="fixed inset-0 z-[9999] h-[100dvh] w-screen overflow-hidden bg-black">
+            <div className="relative h-full w-full overflow-hidden bg-black">
+              <SolarSystemScene
+                fullscreen
+                apiAsteroids={apiAsteroids}
+                focusRequest={focusRequest}
+                onCloseFullscreen={() => setIsFullscreen(false)}
+              />
+            </div>
+          </div>,
+          document.body
+        )}
     </>
   );
 }

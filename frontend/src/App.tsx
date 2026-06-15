@@ -15,7 +15,7 @@ import { GlobalSearch } from "./components/global-search";
 import { TabsList, TabsTrigger } from "./components/ui/tabs";
 import { Language, translations } from "./lib/i18n";
 
-type View = "dashboard" | "flybys" | "watchlist" | "alerts" | "insights" | "edu";
+type View = "dashboard" | "flybys" | "watchlist" | "alerts" | "insights" | "education";
 
 export default function App() {
   const [lang, setLang] = useState<Language>("en");
