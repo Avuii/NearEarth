@@ -69,7 +69,7 @@ NearEarth is currently under active development.
 
 | Area | Status |
 |---|---|
-| React frontend | ✅ Implemented |
+| React + TypeScript frontend | ✅ Implemented |
 | ASP.NET Core backend | ✅ Implemented |
 | NASA NeoWs API integration | ✅ Implemented |
 | Dashboard with live NASA data | ✅ Implemented |
@@ -78,13 +78,19 @@ NearEarth is currently under active development.
 | Asteroid details lookup | ✅ Implemented |
 | Flyby table and filters | ✅ Implemented |
 | Charts and visual analytics | ✅ Implemented |
-| Watchlist in frontend state/local storage | ✅ Implemented |
+| Watchlist using localStorage | ✅ Implemented |
 | In-app alert generation | ✅ Implemented |
-| 3D Solar System preview | ✅ Implemented |
-| Database persistence | Not implemented |
-| User accounts | Not implemented |
-| Email notifications | Not implemented |
-| Deployed backend | Not implemented |
+| Email notifications (Resend / SMTP) | ✅ Implemented — configuration required |
+| Email alert subscriptions | ✅ Implemented |
+| Automatic alert checking | ✅ Implemented — requires running backend |
+| Alert delivery history and duplicate prevention | ✅ Implemented |
+| Data synchronization tracking | ✅ Implemented |
+| 3D Solar System visualization | ✅ Implemented |
+| Backend and frontend automated tests | ✅ Added — execution status not verified |
+| JSON-based alert storage | ✅ Implemented |
+| Database persistence (SQL) | ❌ Not implemented |
+| User accounts and authentication | ❌ Not implemented |
+| Deployed backend | ❌ Not implemented |
 
 ---
 
