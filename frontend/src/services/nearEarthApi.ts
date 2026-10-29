@@ -1,3 +1,6 @@
+import { recordDataSync } from "../lib/data-sync";
+import type { DashboardResponse } from "../types/dashboard";
+
 const API_URL = import.meta.env.VITE_API_URL || "https://localhost:7218";
 
 export interface EmailAlertSettings {
@@ -32,7 +35,6 @@ export interface NeoAlert {
 export interface NotificationResult {
   success: boolean;
   skipped: boolean;
-  mockMode: boolean;
   alertId: string;
   message: string;
 }
@@ -41,11 +43,22 @@ export interface AlertCheckResponse {
   totalAlertsFound: number;
   sentCount: number;
   skippedCount: number;
+  lastSyncedAtUtc: string;
   alerts: NeoAlert[];
   results: NotificationResult[];
 }
 
-export async function getDashboardData(startDate?: string, endDate?: string) {
+export interface AlertSubscription {
+  id: string;
+  settings: EmailAlertSettings;
+  enabled: boolean;
+  lastCheckedAtUtc: string | null;
+  lastSentAtUtc: string | null;
+  lastError: string | null;
+  checkIntervalMinutes: number;
+}
+
+export async function getDashboardData(startDate?: string, endDate?: string, forceRefresh = false) {
   const params = new URLSearchParams();
 
   if (startDate) {
@@ -54,6 +67,10 @@ export async function getDashboardData(startDate?: string, endDate?: string) {
 
   if (endDate) {
     params.append("endDate", endDate);
+  }
+
+  if (forceRefresh) {
+    params.append("forceRefresh", "true");
   }
 
   const query = params.toString();
@@ -67,16 +84,22 @@ export async function getDashboardData(startDate?: string, endDate?: string) {
     throw new Error("Failed to fetch dashboard data");
   }
 
-  return response.json();
+  const data: DashboardResponse = await response.json();
+  recordDataSync(data.lastSyncedAtUtc);
+  return data;
 }
 
-export async function getDashboardRangeData(days = 30, startDate?: string) {
+export async function getDashboardRangeData(days = 30, startDate?: string, forceRefresh = false) {
   const params = new URLSearchParams();
 
   params.append("days", String(days));
 
   if (startDate) {
     params.append("startDate", startDate);
+  }
+
+  if (forceRefresh) {
+    params.append("forceRefresh", "true");
   }
 
   const response = await fetch(
@@ -87,7 +110,9 @@ export async function getDashboardRangeData(days = 30, startDate?: string) {
     throw new Error("Failed to fetch dashboard range data");
   }
 
-  return response.json();
+  const data: DashboardResponse = await response.json();
+  recordDataSync(data.lastSyncedAtUtc);
+  return data;
 }
 
 export async function getNeoFeed(startDate: string, endDate: string) {
@@ -134,11 +159,13 @@ export async function checkEmailAlerts(settings: EmailAlertSettings) {
   });
 
   if (!response.ok) {
-    const message = await response.text();
-    throw new Error(message || "Failed to check email alerts");
+    const error = await response.json().catch(() => null);
+    throw new Error(error?.message || "Failed to check email alerts");
   }
 
-  return response.json() as Promise<AlertCheckResponse>;
+  const result: AlertCheckResponse = await response.json();
+  recordDataSync(result.lastSyncedAtUtc);
+  return result;
 }
 
 export async function getEmailAlertHistory() {
@@ -149,4 +176,32 @@ export async function getEmailAlertHistory() {
   }
 
   return response.json() as Promise<NeoAlert[]>;
+}
+
+export async function getAlertSubscription(id: string): Promise<AlertSubscription | null> {
+  const response = await fetch(`${API_URL}/api/alerts/subscriptions/${encodeURIComponent(id)}`);
+  if (response.status === 404) return null;
+  return readSubscriptionResponse(response);
+}
+
+export async function saveAlertSubscription(settings: EmailAlertSettings, id?: string): Promise<AlertSubscription> {
+  const response = await fetch(`${API_URL}/api/alerts/subscriptions${id ? `/${encodeURIComponent(id)}` : ""}`, {
+    method: id ? "PUT" : "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(settings),
+  });
+  return readSubscriptionResponse(response);
+}
+
+export async function disableAlertSubscription(id: string) {
+  const response = await fetch(`${API_URL}/api/alerts/subscriptions/${encodeURIComponent(id)}`, { method: "DELETE" });
+  if (!response.ok) throw new Error("Could not disable automatic email alerts");
+}
+
+async function readSubscriptionResponse(response: Response): Promise<AlertSubscription> {
+  if (!response.ok) {
+    const error = await response.json().catch(() => null);
+    throw new Error(error?.message || "Could not save automatic email alerts");
+  }
+  return response.json();
 }

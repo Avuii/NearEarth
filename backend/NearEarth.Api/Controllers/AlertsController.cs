@@ -28,31 +28,8 @@ public class AlertsController : ControllerBase
     [HttpPost("check")]
     public async Task<IActionResult> CheckAlerts([FromBody] EmailAlertSettings settings)
     {
-        if (string.IsNullOrWhiteSpace(settings.Email))
-        {
-            return BadRequest(new
-            {
-                message = "Email is required"
-            });
-        }
-
-        if (settings.Language != "pl" && settings.Language != "en")
-        {
-            settings.Language = "en";
-        }
-
-        if (settings.Days < 1 || settings.Days > 30)
-        {
-            return BadRequest(new
-            {
-                message = "Days must be between 1 and 30"
-            });
-        }
-
-        if (settings.MaxEmailsPerCheck < 1 || settings.MaxEmailsPerCheck > 20)
-        {
-            settings.MaxEmailsPerCheck = 10;
-        }
+        var error = AlertSettingsValidation.Normalize(settings);
+        if (error != null) return BadRequest(new { message = error });
 
         var startDate = settings.StartDate;
 
@@ -82,6 +59,7 @@ public class AlertsController : ControllerBase
             TotalAlertsFound = alerts.Count,
             SentCount = results.Count(x => x.Success && !x.Skipped),
             SkippedCount = results.Count(x => x.Skipped),
+            LastSyncedAtUtc = dashboard.LastSyncedAtUtc,
             Alerts = alerts,
             Results = results
         };

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useSyncExternalStore } from "react";
 import { Activity, Languages, User } from "lucide-react";
 import logo from "./assets/logo.png";
 import { EducationCard } from "./components/education-card";
@@ -14,6 +14,7 @@ import { Button } from "./components/ui/button";
 import { GlobalSearch } from "./components/global-search";
 import { TabsList, TabsTrigger } from "./components/ui/tabs";
 import { Language, translations } from "./lib/i18n";
+import { getLastSyncedAtUtc, subscribeToDataSync } from "./lib/data-sync";
 
 type View = "dashboard" | "flybys" | "watchlist" | "alerts" | "insights" | "education";
 
@@ -21,6 +22,7 @@ export default function App() {
   const [lang, setLang] = useState<Language>("en");
   const [activeView, setActiveView] = useState<View>("dashboard");
   const [selectedAsteroidId, setSelectedAsteroidId] = useState<string | null>(null);
+  const lastSyncedAtUtc = useSyncExternalStore(subscribeToDataSync, getLastSyncedAtUtc);
 
   const [watchlistIds, setWatchlistIds] = useState<string[]>(() => {
     try {
@@ -140,15 +142,15 @@ export default function App() {
         <header className="sticky top-0 z-50 border-b border-border bg-background/85 backdrop-blur-xl">
           <div className="mx-auto max-w-7xl px-5 py-4">
             <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
-              <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:gap-8">
+              <div className="flex min-w-0 flex-col gap-4 lg:flex-row lg:items-center lg:gap-6 xl:shrink-0">
                 <button
-                  className="flex w-fit items-center gap-3 select-none transition duration-200 hover:scale-[1.02] active:scale-[0.98]"
+                  className="flex w-fit shrink-0 items-center gap-3 whitespace-nowrap select-none transition duration-200 hover:scale-[1.02] active:scale-[0.98]"
                   onClick={() => setActiveView("dashboard")}
                 >
                   <img
                     src={logo}
                     alt="NearEarth logo"
-                    className="h-12 w-12 object-contain"
+                    className="h-12 w-12 shrink-0 object-contain"
                   />
 
                   <div className="flex flex-col text-left leading-none">
@@ -161,7 +163,7 @@ export default function App() {
                   </div>
                 </button>
 
-                <TabsList className="w-fit">
+                <TabsList className="w-fit max-w-full shrink-0 overflow-x-auto">
                   <TabsTrigger
                     value="dashboard"
                     activeValue={activeView}
@@ -211,28 +213,36 @@ export default function App() {
                 </TabsList>
               </div>
 
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+              <div className="flex min-w-0 flex-wrap items-center gap-3 sm:flex-nowrap xl:flex-1 xl:justify-end">
                 <GlobalSearch
                   lang={lang}
                   onNavigate={(view) => setActiveView(view)}
                   onOpenAsteroid={openAsteroidDetails}
                 />
 
-                <Badge variant="outline" className="w-fit whitespace-nowrap text-xs">
+                <Badge variant="outline" className="w-fit shrink-0 whitespace-nowrap text-xs">
                   <Activity className="h-3.5 w-3.5" />
-                  {t.lastSync}: 2h {t.ago}
+                  {t.lastSync}:{" "}
+                  {lastSyncedAtUtc ? (
+                    <time dateTime={lastSyncedAtUtc}>
+                      {new Date(lastSyncedAtUtc).toLocaleString(lang === "pl" ? "pl-PL" : "en-US")}
+                    </time>
+                  ) : (
+                    lang === "pl" ? "Brak synchronizacji" : "Not synced yet"
+                  )}
                 </Badge>
 
                 <Button
                   variant="outline"
                   size="sm"
+                  className="shrink-0"
                   onClick={() => setLang(lang === "en" ? "pl" : "en")}
                 >
                   <Languages className="h-4 w-4" />
                   {lang.toUpperCase()}
                 </Button>
 
-                <Button variant="ghost" size="icon">
+                <Button variant="ghost" size="icon" className="shrink-0">
                   <User className="h-4 w-4" />
                 </Button>
               </div>

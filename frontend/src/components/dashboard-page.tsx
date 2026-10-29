@@ -55,11 +55,11 @@ export function DashboardPage({
         setIsRefreshing(true);
       }
 
-      const data = await getDashboardData();
+      const data = await getDashboardData(undefined, undefined, !initialLoad);
       setDashboardData(data);
 
       try {
-        const rangeData = await getDashboardRangeData(30);
+        const rangeData = await getDashboardRangeData(30, undefined, !initialLoad);
         setDashboard30Data(rangeData);
       } catch {
         setDashboard30Data(null);
@@ -214,7 +214,7 @@ export function DashboardPage({
     <div>
       <section className="mb-12">
         <div className="mb-6 flex flex-col justify-between gap-5 lg:flex-row lg:items-start">
-          <div>
+          <div className="min-w-0 flex-1">
             <h2 className="mb-3 text-4xl font-semibold tracking-tight text-foreground">
               {t.heroTitle}
             </h2>
@@ -223,9 +223,10 @@ export function DashboardPage({
             </p>
           </div>
 
-          <div className="flex flex-wrap gap-3">
+          <div className="flex w-full flex-nowrap gap-3 sm:w-auto sm:shrink-0">
             <Button
               variant="outline"
+              className="min-w-0 flex-1 sm:flex-none sm:whitespace-nowrap"
               onClick={() => loadDashboardData(false)}
               disabled={isRefreshing}
             >
@@ -233,7 +234,7 @@ export function DashboardPage({
               {t.manualSync}
             </Button>
 
-            <Button onClick={onOpenFlybys}>
+            <Button className="min-w-0 flex-1 sm:flex-none sm:whitespace-nowrap" onClick={onOpenFlybys}>
               <Rocket className="h-4 w-4" />
               {t.exploreFlybys}
             </Button>

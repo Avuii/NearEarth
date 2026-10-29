@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
+using NearEarth.Api.Models.Nasa;
 using NearEarth.Api.Options;
 
 namespace NearEarth.Api.Services;
@@ -19,15 +20,21 @@ public class NasaNeoWsService
 
     public async Task<string> GetFeedAsync(string startDate, string endDate)
     {
+        return (await GetFeedDataAsync(startDate, endDate)).Json;
+    }
+
+    public async Task<NasaFeedData> GetFeedDataAsync(string startDate, string endDate, bool forceRefresh = false, CancellationToken cancellationToken = default)
+    {
         var cacheKey = $"feed:{startDate}:{endDate}";
 
-        if (_cache.TryGetValue(cacheKey, out string? cachedData) && cachedData != null)
+        if (!forceRefresh && _cache.TryGetValue(cacheKey, out NasaFeedData? cachedData) && cachedData != null)
         {
             return cachedData;
         }
 
         var url = $"{_options.BaseUrl}/feed?start_date={startDate}&end_date={endDate}&api_key={_options.ApiKey}";
-        var data = await GetFromNasaAsync(url);
+        var json = await GetFromNasaAsync(url, cancellationToken);
+        var data = new NasaFeedData(json, DateTime.UtcNow);
 
         _cache.Set(cacheKey, data, TimeSpan.FromMinutes(30));
 
@@ -68,9 +75,9 @@ public class NasaNeoWsService
         return data;
     }
 
-    private async Task<string> GetFromNasaAsync(string url)
+    private async Task<string> GetFromNasaAsync(string url, CancellationToken cancellationToken = default)
     {
-        var response = await _httpClient.GetAsync(url);
+        using var response = await _httpClient.GetAsync(url, cancellationToken);
 
         if (!response.IsSuccessStatusCode)
         {

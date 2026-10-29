@@ -15,7 +15,7 @@ public class DashboardController : ControllerBase
     }
 
     [HttpGet("range")]
-    public async Task<IActionResult> GetDashboardRange([FromQuery] string? startDate, [FromQuery] int days = 30)
+    public async Task<IActionResult> GetDashboardRange([FromQuery] string? startDate, [FromQuery] int days = 30, [FromQuery] bool forceRefresh = false)
     {
         var today = DateTime.UtcNow.Date;
 
@@ -44,7 +44,8 @@ public class DashboardController : ControllerBase
         {
             var result = await _dashboardService.GetDashboardRangeAsync(
                 parsedStartDate.ToString("yyyy-MM-dd"),
-                days
+                days,
+                forceRefresh
             );
 
             return Ok(result);
@@ -68,7 +69,7 @@ public class DashboardController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetDashboard([FromQuery] string? startDate, [FromQuery] string? endDate)
+    public async Task<IActionResult> GetDashboard([FromQuery] string? startDate, [FromQuery] string? endDate, [FromQuery] bool forceRefresh = false)
     {
         var today = DateTime.UtcNow.Date;
 
@@ -116,7 +117,7 @@ public class DashboardController : ControllerBase
 
         try
         {
-            var result = await _dashboardService.GetDashboardAsync(startDate, endDate);
+            var result = await _dashboardService.GetDashboardAsync(startDate, endDate, forceRefresh);
             return Ok(result);
         }
         catch (HttpRequestException ex)

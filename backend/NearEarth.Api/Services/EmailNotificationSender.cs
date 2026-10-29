@@ -1,4 +1,6 @@
 ﻿using System.Net.Http.Headers;
+using System.Net;
+using System.Net.Mail;
 using System.Text;
 using System.Text.Json;
 using NearEarth.Api.Models.Alerts;
@@ -16,26 +18,18 @@ public class EmailNotificationSender
         _configuration = configuration;
     }
 
-    public async Task<NotificationResult> SendAsync(NeoAlert alert, string toEmail, string language)
+    public async Task<NotificationResult> SendAsync(NeoAlert alert, string toEmail, string language, CancellationToken cancellationToken = default)
     {
-        var mode = _configuration["Email:Mode"] ?? "Mock";
-
-        if (mode.Equals("Mock", StringComparison.OrdinalIgnoreCase))
-        {
-            return new NotificationResult
-            {
-                Success = true,
-                MockMode = true,
-                AlertId = alert.AlertId,
-                Message = $"Mock email generated for {toEmail}"
-            };
-        }
-
         var provider = _configuration["Email:Provider"] ?? "Resend";
+
+        if (provider.Equals("Smtp", StringComparison.OrdinalIgnoreCase))
+        {
+            return await SendWithSmtpAsync(alert, toEmail, language, cancellationToken);
+        }
 
         if (provider.Equals("Resend", StringComparison.OrdinalIgnoreCase))
         {
-            return await SendWithResendAsync(alert, toEmail, language);
+            return await SendWithResendAsync(alert, toEmail, language, cancellationToken);
         }
 
         return new NotificationResult
@@ -46,7 +40,73 @@ public class EmailNotificationSender
         };
     }
 
-    private async Task<NotificationResult> SendWithResendAsync(NeoAlert alert, string toEmail, string language)
+    private async Task<NotificationResult> SendWithSmtpAsync(NeoAlert alert, string toEmail, string language, CancellationToken cancellationToken)
+    {
+        var host = _configuration["Email:Smtp:Host"] ?? "smtp.gmail.com";
+        var username = _configuration["Email:Smtp:Username"]?.Trim() ?? "";
+        var password = _configuration["Email:Smtp:Password"] ?? "";
+
+        if (!MailAddress.TryCreate(username, out var sender) || string.IsNullOrWhiteSpace(password))
+        {
+            return new NotificationResult
+            {
+                AlertId = alert.AlertId,
+                Message = language == "pl" ? "Nie skonfigurowano konta e-mail nadawcy." : "The sender email account has not been configured."
+            };
+        }
+
+        if (string.IsNullOrWhiteSpace(host) ||
+            !int.TryParse(_configuration["Email:Smtp:Port"] ?? "587", out var port) || port < 1 || port > 65535)
+        {
+            return new NotificationResult
+            {
+                AlertId = alert.AlertId,
+                Message = language == "pl" ? "Nieprawidłowa konfiguracja serwera poczty." : "Invalid email server configuration."
+            };
+        }
+
+        try
+        {
+            using var message = new MailMessage
+            {
+                From = new MailAddress(sender.Address, "NearEarth", Encoding.UTF8),
+                Subject = BuildSubject(alert, language),
+                SubjectEncoding = Encoding.UTF8,
+                Body = BuildTextBody(alert, language),
+                BodyEncoding = Encoding.UTF8
+            };
+            message.To.Add(new MailAddress(toEmail));
+            message.AlternateViews.Add(AlternateView.CreateAlternateViewFromString(BuildHtmlBody(alert, language), Encoding.UTF8, "text/html"));
+
+            using var client = new SmtpClient(host, port)
+            {
+                EnableSsl = true,
+                UseDefaultCredentials = false,
+                Credentials = new NetworkCredential(username, password)
+            };
+            using var timeout = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+            timeout.CancelAfter(TimeSpan.FromSeconds(30));
+            await client.SendMailAsync(message, timeout.Token);
+
+            return new NotificationResult { Success = true, AlertId = alert.AlertId, Message = "Email sent" };
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            throw;
+        }
+        catch (Exception ex) when (ex is SmtpException or FormatException or OperationCanceledException)
+        {
+            return new NotificationResult
+            {
+                AlertId = alert.AlertId,
+                Message = language == "pl"
+                    ? "Nie udało się wysłać maila. Sprawdź połączenie, adres nadawcy i hasło aplikacji do poczty."
+                    : "Could not send email. Check the connection, sender address and email app password."
+            };
+        }
+    }
+
+    private async Task<NotificationResult> SendWithResendAsync(NeoAlert alert, string toEmail, string language, CancellationToken cancellationToken)
     {
         var apiKey = _configuration["Email:ResendApiKey"] ?? "";
         var from = _configuration["Email:From"] ?? "NearEarth <onboarding@resend.dev>";
@@ -81,25 +141,68 @@ public class EmailNotificationSender
         request.Headers.UserAgent.ParseAdd("NearEarth.Api/1.0");
         request.Content = new StringContent(json, Encoding.UTF8, "application/json");
 
-        var response = await _httpClient.SendAsync(request);
-        var content = await response.Content.ReadAsStringAsync();
+        try
+        {
+            using var response = await _httpClient.SendAsync(request, cancellationToken);
+            var content = await response.Content.ReadAsStringAsync();
 
-        if (!response.IsSuccessStatusCode)
+            if (!response.IsSuccessStatusCode)
+            {
+                var message = $"Email service returned HTTP {(int)response.StatusCode}.";
+
+                try
+                {
+                    using var error = JsonDocument.Parse(content);
+                    if (error.RootElement.TryGetProperty("message", out var detail))
+                    {
+                        message = detail.GetString() ?? message;
+                    }
+                }
+                catch (JsonException)
+                {
+                    // Keep a readable error if the provider returns a non-JSON response.
+                }
+
+                return new NotificationResult
+                {
+                    Success = false,
+                    AlertId = alert.AlertId,
+                    Message = message
+                };
+            }
+
+            using var result = JsonDocument.Parse(content);
+            if (!result.RootElement.TryGetProperty("id", out var id) ||
+                string.IsNullOrWhiteSpace(id.GetString()))
+            {
+                return new NotificationResult
+                {
+                    Success = false,
+                    AlertId = alert.AlertId,
+                    Message = "Email service did not confirm sending the message."
+                };
+            }
+
+            return new NotificationResult
+            {
+                Success = true,
+                AlertId = alert.AlertId,
+                Message = "Email sent"
+            };
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            throw;
+        }
+        catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException or JsonException)
         {
             return new NotificationResult
             {
                 Success = false,
                 AlertId = alert.AlertId,
-                Message = content
+                Message = "Could not contact the email service. Please try again."
             };
         }
-
-        return new NotificationResult
-        {
-            Success = true,
-            AlertId = alert.AlertId,
-            Message = "Email sent"
-        };
     }
 
     private string BuildSubject(NeoAlert alert, string language)
@@ -162,7 +265,7 @@ public class EmailNotificationSender
 
     private string BuildHtmlBody(NeoAlert alert, string language)
     {
-        var reason = language == "pl" ? alert.ReasonPl : alert.ReasonEn;
+        var reason = WebUtility.HtmlEncode(language == "pl" ? alert.ReasonPl : alert.ReasonEn);
         var title = language == "pl" ? "Alert NearEarth" : "NearEarth Alert";
         var objectLabel = language == "pl" ? "Obiekt" : "Object";
         var dateLabel = language == "pl" ? "Data przelotu" : "Close approach date";
@@ -177,9 +280,9 @@ public class EmailNotificationSender
             <p style="margin:0 0 16px;color:#cbd5e1">{reason}</p>
 
             <table style="width:100%;border-collapse:collapse">
-                <tr><td style="padding:6px;color:#94a3b8">{objectLabel}</td><td style="padding:6px">{alert.ObjectName}</td></tr>
-                <tr><td style="padding:6px;color:#94a3b8">ID</td><td style="padding:6px">{alert.ObjectId}</td></tr>
-                <tr><td style="padding:6px;color:#94a3b8">{dateLabel}</td><td style="padding:6px">{alert.CloseApproachDate}</td></tr>
+                <tr><td style="padding:6px;color:#94a3b8">{objectLabel}</td><td style="padding:6px">{WebUtility.HtmlEncode(alert.ObjectName)}</td></tr>
+                <tr><td style="padding:6px;color:#94a3b8">ID</td><td style="padding:6px">{WebUtility.HtmlEncode(alert.ObjectId)}</td></tr>
+                <tr><td style="padding:6px;color:#94a3b8">{dateLabel}</td><td style="padding:6px">{WebUtility.HtmlEncode(alert.CloseApproachDate)}</td></tr>
                 <tr><td style="padding:6px;color:#94a3b8">{distanceLabel}</td><td style="padding:6px">{alert.MissDistanceLunar:F2} LD</td></tr>
                 <tr><td style="padding:6px;color:#94a3b8">{diameterLabel}</td><td style="padding:6px">~{Math.Round(alert.DiameterAverageMeters)} m</td></tr>
                 <tr><td style="padding:6px;color:#94a3b8">{velocityLabel}</td><td style="padding:6px">{alert.VelocityKilometersPerSecond:F1} km/s</td></tr>

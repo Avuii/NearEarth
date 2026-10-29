@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   AlertCircle,
   CheckCircle2,
@@ -14,6 +14,11 @@ import {
   checkEmailAlerts,
   getDashboardData,
   getEmailAlertHistory,
+  getAlertSubscription,
+  saveAlertSubscription,
+  disableAlertSubscription,
+  type AlertSubscription,
+  type EmailAlertSettings,
   type AlertCheckResponse,
   type NeoAlert,
 } from "../services/nearEarthApi";
@@ -56,7 +61,7 @@ const copy = {
     emailTitle: "Email notifications",
     emailSubtitle:
       "Send email alerts when NASA NeoWs detects objects matching selected rules.",
-    emailAddress: "Email address",
+    emailAddress: "Recipient email address",
     alertLanguage: "Alert language",
     alertRules: "Alert rules",
     thresholds: "Thresholds",
@@ -76,12 +81,28 @@ const copy = {
     failed: "failed",
     historyTitle: "Sent email history",
     noHistory: "No sent email alerts yet.",
-    mockHint:
-      "If backend Email:Mode is Mock, the alert will be generated without sending a real email.",
-    validationEmail: "Enter an email address first.",
+    deliveryHint:
+      "Alerts are sent to the email address above. Previously sent alerts are skipped.",
+    validationEmail: "Enter a valid email address.",
     errorGeneric: "Could not send email alerts.",
     enabled: "Enabled",
     disabled: "Disabled",
+    automaticTitle: "Automatic email alerts",
+    automaticHint: "Save your recipient address and rules. Alerts will be sent even when this page is closed, while the application server is running.",
+    enableAutomatic: "Save and enable automatic alerts",
+    updateAutomatic: "Save rule changes",
+    disableAutomatic: "Disable automatic alerts",
+    savingAutomatic: "Saving settings...",
+    automaticEnabled: "Enabled",
+    automaticDisabled: "Disabled",
+    checkEvery: "Checks every",
+    lastAutomaticCheck: "Last check",
+    lastAutomaticSend: "Last email sent",
+    pendingCheck: "Waiting for the first check",
+    noAutomaticSend: "No email sent yet",
+    validationRules: "Enable at least one alert rule.",
+    automaticError: "Could not update automatic email alerts.",
+    activeRecipient: "Saved recipient",
   },
   pl: {
     subtitle:
@@ -96,7 +117,7 @@ const copy = {
     emailTitle: "Powiadomienia e-mail",
     emailSubtitle:
       "Wysyłaj alerty e-mail, gdy NASA NeoWs wykryje obiekty spełniające wybrane reguły.",
-    emailAddress: "Adres e-mail",
+    emailAddress: "Adres e-mail odbiorcy",
     alertLanguage: "Język alertu",
     alertRules: "Reguły alertów",
     thresholds: "Progi",
@@ -116,12 +137,28 @@ const copy = {
     failed: "nieudanych",
     historyTitle: "Historia wysłanych alertów",
     noHistory: "Brak wysłanych alertów e-mail.",
-    mockHint:
-      "Jeśli backend ma Email:Mode ustawione na Mock, alert zostanie wygenerowany bez realnej wysyłki maila.",
-    validationEmail: "Najpierw wpisz adres e-mail.",
+    deliveryHint:
+      "Alerty zostaną wysłane na podany adres e-mail. Wcześniej wysłane alerty są pomijane.",
+    validationEmail: "Wpisz prawidłowy adres e-mail.",
     errorGeneric: "Nie udało się wysłać alertów e-mail.",
     enabled: "Włączone",
     disabled: "Wyłączone",
+    automaticTitle: "Automatyczne alerty e-mail",
+    automaticHint: "Zapisz adres odbiorcy i reguły. Alerty będą wysyłane również po zamknięciu tej strony, gdy serwer aplikacji jest uruchomiony.",
+    enableAutomatic: "Zapisz i włącz automatyczne alerty",
+    updateAutomatic: "Zapisz zmiany reguł",
+    disableAutomatic: "Wyłącz automatyczne alerty",
+    savingAutomatic: "Zapisywanie ustawień...",
+    automaticEnabled: "Włączone",
+    automaticDisabled: "Wyłączone",
+    checkEvery: "Sprawdzanie co",
+    lastAutomaticCheck: "Ostatnie sprawdzenie",
+    lastAutomaticSend: "Ostatni wysłany e-mail",
+    pendingCheck: "Oczekuje na pierwsze sprawdzenie",
+    noAutomaticSend: "Jeszcze nie wysłano maila",
+    validationRules: "Włącz przynajmniej jedną regułę alertu.",
+    automaticError: "Nie udało się zmienić ustawień automatycznych alertów.",
+    activeRecipient: "Zapisany odbiorca",
   },
 };
 
@@ -172,6 +209,99 @@ export function AlertsPage({ lang }: AlertsPageProps) {
   const [isChecking, setIsChecking] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [formError, setFormError] = useState<string | null>(null);
+  const [subscriptionId, setSubscriptionId] = useState<string | null>(() => localStorage.getItem("nearearth-alert-subscription"));
+  const [subscription, setSubscription] = useState<AlertSubscription | null>(null);
+  const [isSavingSubscription, setIsSavingSubscription] = useState(false);
+  const [subscriptionError, setSubscriptionError] = useState<string | null>(null);
+  const subscriptionRevision = useRef(0);
+
+  function getEmailSettings(): EmailAlertSettings {
+    return {
+      email: email.trim(), language: alertLanguage, enableVeryClose, enableLargeObject,
+      enablePotentiallyHazardous, veryCloseMaxLd, largeMinDiameterMeters, days: 7, maxEmailsPerCheck,
+    };
+  }
+
+  async function handleSaveSubscription() {
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
+      setFormError(c.validationEmail);
+      return;
+    }
+    if (!enableVeryClose && !enableLargeObject && !enablePotentiallyHazardous) {
+      setFormError(c.validationRules);
+      return;
+    }
+    try {
+      subscriptionRevision.current++;
+      setIsSavingSubscription(true);
+      setFormError(null);
+      const saved = await saveAlertSubscription(getEmailSettings(), subscriptionId ?? undefined);
+      localStorage.setItem("nearearth-alert-subscription", saved.id);
+      setSubscriptionId(saved.id);
+      setSubscription(saved);
+      setSubscriptionError(null);
+    } catch (err) {
+      setFormError(err instanceof Error ? err.message : c.automaticError);
+    } finally {
+      setIsSavingSubscription(false);
+    }
+  }
+
+  async function handleDisableSubscription() {
+    if (!subscriptionId) return;
+    try {
+      subscriptionRevision.current++;
+      setIsSavingSubscription(true);
+      setFormError(null);
+      await disableAlertSubscription(subscriptionId);
+      setSubscription((current) => current ? { ...current, enabled: false } : null);
+      setSubscriptionError(null);
+    } catch (err) {
+      setFormError(err instanceof Error ? err.message : c.automaticError);
+    } finally {
+      setIsSavingSubscription(false);
+    }
+  }
+
+  useEffect(() => {
+    if (!subscriptionId) return;
+    let active = true;
+    let initializeForm = true;
+    async function refreshSubscription() {
+      const revision = subscriptionRevision.current;
+      try {
+        const [saved, sentHistory] = await Promise.all([
+          getAlertSubscription(subscriptionId!),
+          getEmailAlertHistory().catch(() => null),
+        ]);
+        if (!active || revision !== subscriptionRevision.current) return;
+        setSubscription(saved);
+        setSubscriptionError(null);
+        if (sentHistory) setHistory(sentHistory);
+        if (!saved) {
+          localStorage.removeItem("nearearth-alert-subscription");
+          setSubscriptionId(null);
+        } else if (initializeForm) {
+          const settings = saved.settings;
+          setEmail(settings.email);
+          setAlertLanguage(settings.language);
+          setEnableVeryClose(settings.enableVeryClose);
+          setEnableLargeObject(settings.enableLargeObject);
+          setEnablePotentiallyHazardous(settings.enablePotentiallyHazardous);
+          setVeryCloseMaxLd(settings.veryCloseMaxLd);
+          setLargeMinDiameterMeters(settings.largeMinDiameterMeters);
+          setMaxEmailsPerCheck(settings.maxEmailsPerCheck);
+        }
+      } catch (err) {
+        if (active && revision === subscriptionRevision.current) setSubscriptionError(err instanceof Error ? err.message : "Could not load automatic email alerts");
+      } finally {
+        initializeForm = false;
+      }
+    }
+    void refreshSubscription();
+    const timer = window.setInterval(refreshSubscription, 15_000);
+    return () => { active = false; window.clearInterval(timer); };
+  }, [subscriptionId]);
 
   async function loadData() {
     try {
@@ -204,7 +334,7 @@ export function AlertsPage({ lang }: AlertsPageProps) {
   }
 
   async function handleSendAlerts() {
-    if (!email.trim()) {
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
       setFormError(c.validationEmail);
       return;
     }
@@ -212,18 +342,9 @@ export function AlertsPage({ lang }: AlertsPageProps) {
     try {
       setIsChecking(true);
       setFormError(null);
+      setCheckResult(null);
 
-      const result = await checkEmailAlerts({
-        email: email.trim(),
-        language: alertLanguage,
-        enableVeryClose,
-        enableLargeObject,
-        enablePotentiallyHazardous,
-        veryCloseMaxLd,
-        largeMinDiameterMeters,
-        days: 7,
-        maxEmailsPerCheck,
-      });
+      const result = await checkEmailAlerts(getEmailSettings());
 
       setCheckResult(result);
       await refreshHistory();
@@ -462,11 +583,12 @@ export function AlertsPage({ lang }: AlertsPageProps) {
 
           <div className="space-y-5">
             <div>
-              <label className="mb-2 block text-sm font-medium text-foreground">
+              <label htmlFor="alert-recipient" className="mb-2 block text-sm font-medium text-foreground">
                 {c.emailAddress}
               </label>
 
               <Input
+                id="alert-recipient"
                 type="email"
                 value={email}
                 onChange={(event) => setEmail(event.target.value)}
@@ -574,7 +696,39 @@ export function AlertsPage({ lang }: AlertsPageProps) {
             </div>
 
             <div className="rounded-xl border border-cyan-300/15 bg-cyan-300/5 p-4 text-sm leading-relaxed text-muted-foreground">
-              {c.mockHint}
+              {c.deliveryHint}
+            </div>
+
+            <div className="space-y-3 rounded-xl border border-cyan-300/20 bg-cyan-300/5 p-4">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <p className="font-medium text-foreground">{c.automaticTitle}</p>
+                <Badge variant={subscription?.enabled ? "success" : "outline"}>
+                  {subscription?.enabled ? c.automaticEnabled : c.automaticDisabled}
+                </Badge>
+              </div>
+              <p className="text-sm leading-relaxed text-muted-foreground">{c.automaticHint}</p>
+              {subscription && (
+                <div className="space-y-1 text-xs text-muted-foreground" role="status">
+                  <p>{c.activeRecipient}: {subscription.settings.email}</p>
+                  <p>{c.checkEvery} {subscription.checkIntervalMinutes} min</p>
+                  <p>{c.lastAutomaticCheck}: {subscription.lastCheckedAtUtc
+                    ? new Date(subscription.lastCheckedAtUtc).toLocaleString(lang === "pl" ? "pl-PL" : "en-US") : c.pendingCheck}</p>
+                  <p>{c.lastAutomaticSend}: {subscription.lastSentAtUtc
+                    ? new Date(subscription.lastSentAtUtc).toLocaleString(lang === "pl" ? "pl-PL" : "en-US") : c.noAutomaticSend}</p>
+                </div>
+              )}
+              {(subscription?.lastError || subscriptionError) && (
+                <p role="alert" className="text-sm text-red-200">{subscription?.lastError || subscriptionError}</p>
+              )}
+              <Button className="w-full" onClick={handleSaveSubscription} disabled={isSavingSubscription || isChecking}>
+                {isSavingSubscription ? <RefreshCw className="h-4 w-4 animate-spin" /> : <Settings className="h-4 w-4" />}
+                {isSavingSubscription ? c.savingAutomatic : subscription?.enabled ? c.updateAutomatic : c.enableAutomatic}
+              </Button>
+              {subscription?.enabled && (
+                <Button variant="outline" className="w-full" onClick={handleDisableSubscription} disabled={isSavingSubscription || isChecking}>
+                  {c.disableAutomatic}
+                </Button>
+              )}
             </div>
 
             {formError && (
@@ -586,7 +740,7 @@ export function AlertsPage({ lang }: AlertsPageProps) {
             <Button
               className="w-full"
               onClick={handleSendAlerts}
-              disabled={isChecking}
+              disabled={isChecking || isSavingSubscription}
             >
               {isChecking ? (
                 <RefreshCw className="h-4 w-4 animate-spin" />
@@ -617,6 +771,14 @@ export function AlertsPage({ lang }: AlertsPageProps) {
 
                   <ResultItem label={c.failed} value={failedCount} />
                 </div>
+
+                {failedCount > 0 && (
+                  <div role="alert" className="mt-3 rounded-xl border border-red-400/20 bg-red-500/10 p-3 text-sm text-red-200">
+                    {[...new Set(checkResult.results.filter((item) => !item.success && !item.skipped).map((item) => item.message))].map((message) => (
+                      <p key={message}>{message}</p>
+                    ))}
+                  </div>
+                )}
               </div>
             )}
           </div>
@@ -634,8 +796,8 @@ export function AlertsPage({ lang }: AlertsPageProps) {
 
               <p className="mt-1 text-sm text-muted-foreground">
                 {lang === "pl"
-                  ? "Lista alertów e-mail zapisanych przez backend w tej sesji."
-                  : "Email alerts stored by the backend during this session."}
+                  ? "Historia wysłanych alertów e-mail."
+                  : "Sent email alert history."}
               </p>
             </div>
 

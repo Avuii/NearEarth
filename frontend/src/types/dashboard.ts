@@ -35,6 +35,7 @@ export type DashboardResponse = {
   startDate: string;
   endDate: string;
   generatedAtUtc: string;
+  lastSyncedAtUtc: string;
   summary: DashboardSummary;
   closestObject: DashboardNeoItem | null;
   fastestObject: DashboardNeoItem | null;

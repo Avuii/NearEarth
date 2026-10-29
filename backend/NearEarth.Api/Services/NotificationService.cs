@@ -17,13 +17,41 @@ public class NotificationService
 
     public async Task<List<NotificationResult>> SendEmailAlertsAsync(
         List<NeoAlert> alerts,
-        EmailAlertSettings settings)
+        EmailAlertSettings settings,
+        CancellationToken cancellationToken = default,
+        Func<bool>? shouldContinue = null)
+    {
+        await _historyService.DeliveryLock.WaitAsync(cancellationToken);
+        try
+        {
+            return await SendPendingAlertsAsync(alerts, settings, cancellationToken, shouldContinue);
+        }
+        finally
+        {
+            _historyService.DeliveryLock.Release();
+        }
+    }
+
+    private async Task<List<NotificationResult>> SendPendingAlertsAsync(
+        List<NeoAlert> alerts,
+        EmailAlertSettings settings,
+        CancellationToken cancellationToken,
+        Func<bool>? shouldContinue)
     {
         var results = new List<NotificationResult>();
 
-        foreach (var alert in alerts.Take(settings.MaxEmailsPerCheck))
+        var attemptedCount = 0;
+
+        foreach (var alert in alerts)
         {
-            var key = $"{settings.Email}_{alert.AlertId}";
+            cancellationToken.ThrowIfCancellationRequested();
+            if (shouldContinue != null && !shouldContinue()) break;
+            if (attemptedCount >= settings.MaxEmailsPerCheck)
+            {
+                break;
+            }
+
+            var key = $"{settings.Email.Trim().ToLowerInvariant()}_{alert.AlertId}";
 
             if (_historyService.WasSent(key))
             {
@@ -38,7 +66,14 @@ public class NotificationService
                 continue;
             }
 
-            var result = await _emailSender.SendAsync(alert, settings.Email, settings.Language);
+            if (attemptedCount > 0)
+            {
+                await Task.Delay(TimeSpan.FromSeconds(1), cancellationToken);
+            }
+
+            attemptedCount++;
+            if (shouldContinue != null && !shouldContinue()) break;
+            var result = await _emailSender.SendAsync(alert, settings.Email, settings.Language, cancellationToken);
 
             results.Add(result);
 

@@ -395,7 +395,7 @@ export function GlobalSearch({
         };
 
   return (
-    <div ref={wrapperRef} className="relative hidden lg:block">
+    <div ref={wrapperRef} className="relative hidden min-w-[180px] max-w-[360px] flex-1 lg:block">
       <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-cyan-300/70" />
 
       <Input
@@ -406,7 +406,7 @@ export function GlobalSearch({
         }}
         onFocus={openSearch}
         placeholder={labels.placeholder}
-        className="h-11 w-[300px] rounded-2xl border border-white/10 bg-white/[0.045] pl-11 pr-4 text-sm text-foreground shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] outline-none backdrop-blur-xl placeholder:text-muted-foreground/70 focus:border-cyan-300/50 focus:bg-white/[0.07] focus:ring-2 focus:ring-cyan-400/15 xl:w-[360px]"
+        className="h-11 w-full rounded-2xl border border-white/10 bg-white/[0.045] pl-11 pr-4 text-sm text-foreground shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] outline-none backdrop-blur-xl placeholder:text-muted-foreground/70 focus:border-cyan-300/50 focus:bg-white/[0.07] focus:ring-2 focus:ring-cyan-400/15"
       />
 
       {isOpen && (

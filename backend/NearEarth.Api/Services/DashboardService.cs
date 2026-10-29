@@ -14,16 +14,16 @@ public class DashboardService
         _nasaNeoWsService = nasaNeoWsService;
     }
 
-    public async Task<DashboardResponse> GetDashboardAsync(string startDate, string endDate)
+    public async Task<DashboardResponse> GetDashboardAsync(string startDate, string endDate, bool forceRefresh = false, CancellationToken cancellationToken = default)
     {
-        var rawJson = await _nasaNeoWsService.GetFeedAsync(startDate, endDate);
+        var feed = await _nasaNeoWsService.GetFeedDataAsync(startDate, endDate, forceRefresh, cancellationToken);
 
         var options = new JsonSerializerOptions
         {
             PropertyNameCaseInsensitive = true
         };
 
-        var nasaData = JsonSerializer.Deserialize<NasaFeedResponse>(rawJson, options);
+        var nasaData = JsonSerializer.Deserialize<NasaFeedResponse>(feed.Json, options);
 
         if (nasaData == null)
         {
@@ -44,15 +44,16 @@ public class DashboardService
             }
         }
 
-        return BuildDashboardResponse(startDate, endDate, objects);
+        return BuildDashboardResponse(startDate, endDate, objects, feed.SyncedAtUtc);
     }
 
-    public async Task<DashboardResponse> GetDashboardRangeAsync(string startDate, int days)
+    public async Task<DashboardResponse> GetDashboardRangeAsync(string startDate, int days, bool forceRefresh = false, CancellationToken cancellationToken = default)
     {
         var start = DateTime.Parse(startDate, CultureInfo.InvariantCulture);
         var end = start.AddDays(days - 1);
 
         var allObjects = new List<DashboardNeoItem>();
+        var lastSyncedAtUtc = DateTime.MinValue;
 
         var currentStart = start;
 
@@ -68,9 +69,13 @@ public class DashboardService
             var chunkStart = currentStart.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
             var chunkEnd = currentEnd.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
 
-            var chunk = await GetDashboardAsync(chunkStart, chunkEnd);
+            var chunk = await GetDashboardAsync(chunkStart, chunkEnd, forceRefresh, cancellationToken);
 
             allObjects.AddRange(chunk.Objects);
+            if (chunk.LastSyncedAtUtc > lastSyncedAtUtc)
+            {
+                lastSyncedAtUtc = chunk.LastSyncedAtUtc;
+            }
 
             currentStart = currentEnd.AddDays(1);
         }
@@ -78,11 +83,12 @@ public class DashboardService
         return BuildDashboardResponse(
             start.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
             end.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
-            allObjects
+            allObjects,
+            lastSyncedAtUtc
         );
     }
 
-    private DashboardResponse BuildDashboardResponse(string startDate, string endDate, List<DashboardNeoItem> objects)
+    private DashboardResponse BuildDashboardResponse(string startDate, string endDate, List<DashboardNeoItem> objects, DateTime lastSyncedAtUtc)
     {
         objects = objects
             .OrderBy(x => x.CloseApproachDate)
@@ -117,6 +123,7 @@ public class DashboardService
             StartDate = startDate,
             EndDate = endDate,
             GeneratedAtUtc = DateTime.UtcNow,
+            LastSyncedAtUtc = lastSyncedAtUtc,
             Summary = new DashboardSummaryCard
             {
                 TotalObjects = totalObjects,

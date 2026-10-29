@@ -14,6 +14,9 @@ builder.Services.AddScoped<DashboardService>();
 builder.Services.AddScoped<AlertEvaluationService>();
 builder.Services.AddScoped<NotificationService>();
 builder.Services.AddSingleton<NotificationHistoryService>();
+builder.Services.AddSingleton<AlertSubscriptionStore>();
+builder.Services.AddScoped<AutomaticAlertProcessor>();
+builder.Services.AddHostedService<AutomaticAlertWorker>();
 
 builder.Services.AddControllers();
 

@@ -52,6 +52,7 @@ coverage/
 # ASP.NET local settings
 appsettings.Development.json
 appsettings.Local.json
+/backend/NearEarth.Api/App_Data/
 
 # Python
 __pycache__/
@@ -91,3 +92,6 @@ models/
 package-lock.json
 yarn.lock
 pnpm-lock.yaml
+
+*.zip
+*.ps1
