@@ -1,328 +1,153 @@
-<p align="center">
-  <img src="frontend/src/assets/logo.png" alt="NearEarth Logo" width="220" />
-</p>
+<div align="center">
 
-<h1 align="center">NearEarth</h1>
+<img src="frontend/src/assets/logo.png" alt="NearEarth logo" width="170" />
 
-<p align="center">
-  <strong>Interactive dashboard for monitoring Near-Earth Objects, close approaches and asteroid watchlists</strong>
-</p>
+# NearEarth
 
-<p align="center">
+**Explore Near-Earth Objects, investigate close approaches, and track asteroids through an interactive dashboard.**
+
+<p>
   <a href="https://avuii.github.io/NearEarth/">
-    <strong>🚀 Open the Static Demo</strong>
+    <img src="https://img.shields.io/badge/Live%20Demo-Open-1555F5?style=for-the-badge&logo=githubpages&logoColor=white" alt="Open the NearEarth demo" />
+  </a>
+  <img src="https://img.shields.io/badge/Status-Active%20Development-6366F1?style=for-the-badge" alt="Project status: active development" />
+  <a href="LICENSE">
+    <img src="https://img.shields.io/badge/License-All%20Rights%20Reserved-64748B?style=for-the-badge" alt="All rights reserved" />
+  </a>
+</p>
+
+<p>
+  <img src="https://img.shields.io/badge/React-149ECA?style=for-the-badge&logo=react&logoColor=white" alt="React" />
+  <img src="https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=white" alt="TypeScript" />
+  <img src="https://img.shields.io/badge/ASP.NET%20Core-512BD4?style=for-the-badge&logo=dotnet&logoColor=white" alt="ASP.NET Core" />
+  <img src="https://img.shields.io/badge/Three.js-111827?style=for-the-badge&logo=threedotjs&logoColor=white" alt="Three.js" />
+  <img src="https://img.shields.io/badge/NASA-NeoWs-2563EB?style=for-the-badge" alt="NASA NeoWs" />
+</p>
+
+**[Live Demo](https://avuii.github.io/NearEarth/)** · **[NASA NeoWs](https://api.nasa.gov/)** · **[Report an Issue](https://github.com/Avuii/NearEarth/issues)**
+
+</div>
+
+---
+
+## Application Preview
+
+<p align="center">
+  <a href="https://github.com/user-attachments/assets/4a6ce557-6267-4185-a8a2-255503045016">
+    <img src="https://github.com/user-attachments/assets/4a6ce557-6267-4185-a8a2-255503045016" alt="NearEarth application dashboard" width="860" />
   </a>
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/status-in%20development-6366F1?style=for-the-badge" />
-  <img src="https://img.shields.io/badge/demo-GitHub%20Pages-22C55E?style=for-the-badge" />
-  <img src="https://img.shields.io/badge/NASA%20NeoWs-API-2563EB?style=for-the-badge" />
-  <img src="https://img.shields.io/badge/JPL%20SBDB-Reference-0F766E?style=for-the-badge" />
-  <img src="https://img.shields.io/badge/frontend-React%20%2B%20TypeScript-22C55E?style=for-the-badge" />
-  <img src="https://img.shields.io/badge/backend-ASP.NET%20Core-512BD4?style=for-the-badge" />
-</p>
-<p align="center">
-<img width="800" alt="image" src="https://github.com/user-attachments/assets/4a6ce557-6267-4185-a8a2-255503045016" />
+  <a href="https://avuii.github.io/NearEarth/"><strong>Open the interactive demo</strong></a>
 </p>
 
----
+The GitHub Pages demo uses bundled sample data and simulates email delivery in the browser. **Live NASA data and real email alerts require the ASP.NET Core backend** and the appropriate credentials.
 
-## 📑 Table of Contents
+## Table of Contents
 
-- [🌍 Overview](#-overview)
-- [🧩 Current Status](#-current-status)
-- [🚀 Live Demo](#-live-demo)
-- [✨ Features](#-features)
-  - [📊 Dashboard](#-dashboard)
-  - [🔎 Flyby Explorer](#-flyby-explorer)
-  - [☄️ Asteroid Details](#️-asteroid-details)
-  - [⭐ Watchlist](#-watchlist)
-  - [🚨 Alerts](#-alerts)
-  - [📈 Charts and 3D Preview](#-charts-and-3d-preview)
-  - [📚 Search and Education](#-search-and-education)
-- [🛰️ Data Sources](#️-data-sources)
-- [🛠️ Tech Stack](#️-tech-stack)
-- [🔌 Backend API](#-backend-api)
-- [🧱 Project Structure](#-project-structure)
-- [🚀 Getting Started](#-getting-started)
-- [🔐 Environment Variables](#-environment-variables)
-- [🧪 Testing and Builds](#-testing-and-builds)
-- [⚠️ Limitations](#️-limitations)
-- [🛣️ Roadmap](#️-roadmap)
-- [⚠️ Disclaimer](#️-disclaimer)
-- [👩‍💻 Author](#-author)
+- [Overview](#overview)
+- [Key Features](#key-features)
+- [Technology Stack](#technology-stack)
+- [Architecture](#architecture)
+- [Getting Started](#getting-started)
+- [Configuration & API](#configuration--api)
+- [Testing & Security](#testing--security)
+- [Project Status & Roadmap](#project-status--roadmap)
+- [License](#license)
+- [Author](#author)
 
----
+## Overview
 
-## 🌍 Overview
+**NearEarth** is a full-stack educational web application for exploring Near-Earth Objects (NEOs), their upcoming close approaches, and NASA's potentially hazardous asteroid (PHA) indicators.
 
-**NearEarth** is a full-stack web application for monitoring Near-Earth Objects, asteroid close approaches and potentially hazardous asteroid indicators.
+The application combines **NASA NeoWs data**, interactive charts, asteroid details, a personal watchlist, a simplified 3D Solar System, and configurable alerts in one interface. The backend normalizes and caches NASA responses, aggregates a 30-day view from multiple requests, and manages automatic email alert checks.
 
-The application presents NASA NeoWs data through summary cards, charts, close approach tables, asteroid details, a watchlist and a simplified 3D space preview. Users can check alerts manually or subscribe to automatic email alerts.
+It is designed for space enthusiasts, students, and users who want a more approachable way to explore asteroid data—not for issuing official hazard warnings.
 
-The goal of the project is to make asteroid close approach data easier to explore through a modern web interface.
+> [!NOTE]
+> The public GitHub Pages demo is a standalone sample-data experience. The full React frontend uses a separate ASP.NET Core API to retrieve live data and deliver configured notifications.
 
----
+## Key Features
 
-## 🧩 Current Status
+| Feature | Description | Availability |
+| --- | --- | --- |
+| **Dashboard** | 7-day and 30-day summaries, nearest and largest objects, relative velocities, PHA counts, recent alerts, and last successful data sync. | Full app; sample data in demo |
+| **Flyby Explorer** | Search, sort, and filter upcoming approaches by proximity and potentially hazardous status; inspect distances, speeds, and diameters. | Implemented |
+| **Asteroid Details** | NASA/JPL identifiers, diameter estimates, approach dates, miss distances, velocities, orbit class, and external source links. | Implemented |
+| **Watchlist** | Save and remove selected asteroids; review their closest approaches and PHA indicators. | Browser `localStorage` |
+| **Alerts** | Generate in-app alerts and configure distance, diameter, PHA, recipient, language, and per-check email limits. | Full app; simulated email in demo |
+| **Automatic Email Checks** | Background subscription checks, send history, duplicate prevention, and last-check diagnostics. | Running backend and configured sender required |
+| **Charts and Statistics** | Flybys over time, distance vs. date, and closest-approach comparisons. | Main charts use NASA data; Stats tab uses samples |
+| **3D Solar System** | Simplified interactive space view, asteroid-belt reference, object focus, and fullscreen preview. | Educational visualization |
+| **Search and Education** | Search asteroids, pages, and learning topics; read explanations in English and Polish. | Implemented |
 
-NearEarth is currently under active development.
+### Alert Workflow
 
-| Area | Status |
-|---|---|
-| React + TypeScript frontend | ✅ Implemented |
-| ASP.NET Core backend | ✅ Implemented |
-| NASA NeoWs API integration | ✅ Implemented |
-| Dashboard with live NASA data | ✅ Implemented |
-| 7-day close approach summary | ✅ Implemented |
-| 30-day backend aggregation | ✅ Implemented |
-| Asteroid details lookup | ✅ Implemented |
-| Flyby table and filters | ✅ Implemented |
-| Dashboard and Flyby Explorer charts | ✅ Implemented with NASA data |
-| Stats tab | 🟡 Implemented with bundled sample data |
-| Watchlist using localStorage | ✅ Implemented |
-| In-app alert generation | ✅ Implemented |
-| Email notifications (Resend / SMTP) | ✅ Implemented, requires sender configuration |
-| Email alert subscriptions | ✅ Implemented, with configurable recipient and rules |
-| Automatic alert checking | ✅ Implemented, requires a running backend |
-| Email history and duplicate prevention | ✅ Implemented, persists across backend restarts |
-| Manual data refresh and last successful sync time | ✅ Implemented |
-| 3D Solar System visualization | ✅ Implemented |
-| Global search and education in English and Polish | ✅ Implemented |
-| Automated backend and frontend tests | ✅ 24 backend and 5 frontend tests passed locally |
-| JSON-based alert storage | ✅ Implemented |
-| Database persistence (SQL) | ❌ Not implemented |
-| User accounts and authentication | ❌ Not implemented |
-| Public backend deployment | ❌ No deployment configured in the repository |
+1. Choose a distance, estimated-diameter, or PHA-based rule in **Alerts**.
+2. Add an email recipient, select a language, and set the per-check email limit.
+3. Run an on-demand check or save an automatic alert subscription.
+4. The background service evaluates saved subscriptions every **15 minutes by default**, while the backend is running.
+5. Successful sends are recorded to prevent duplicate notifications to the same recipient.
 
----
+Subscription data and successful-send history are currently stored in JSON files under `backend/NearEarth.Api/App_Data/`.
 
-## 🚀 Live Demo
+## Technology Stack
 
-The [GitHub Pages demo](https://avuii.github.io/NearEarth/) is built from `demo/`. It uses sample data and simulates email sending in the browser.
+| Layer | Technologies | Purpose |
+| --- | --- | --- |
+| **Frontend** | React, TypeScript, Vite, Tailwind CSS | Dashboard and responsive interface |
+| **Visualization** | Recharts, Three.js, Lucide React | Charts, 3D preview, interface icons |
+| **Backend** | C#, ASP.NET Core Web API, `HttpClient` | API endpoints, NASA requests, alert management |
+| **Caching** | `MemoryCache` | Reduce repeated NASA calls |
+| **Background Processing** | ASP.NET Core hosted service | Scheduled checks of email subscriptions |
+| **Persistence** | Browser `localStorage`, local JSON files | Watchlist, subscription data, send history |
+| **Documentation** | Swagger / OpenAPI | Backend endpoint exploration |
+| **External Data** | NASA NeoWs | Asteroid details and close approach data |
+| **Email** | Resend or SMTP | Configurable outbound notifications |
 
-The full app uses `frontend/` and the ASP.NET Core API. Live NASA data and real email alerts require a running backend with the relevant API key or mail credentials.
+**SQL database persistence and user authentication are not implemented.**
 
----
+## Architecture
 
-## ✨ Features
+The full application uses the ASP.NET Core backend as a proxy for NASA NeoWs so the NASA API key is not exposed to the browser.
 
-### 📊 Dashboard
+```mermaid
+flowchart LR
+    UI["React + TypeScript Frontend"] --> API["ASP.NET Core API"]
+    API --> NASA["NASA NeoWs API"]
+    API <--> Cache["Memory Cache"]
+    API --> Alerts["Alert Subscriptions"]
+    Alerts <--> JSON[("Local JSON Storage")]
+    Alerts --> Worker["Hosted Background Service"]
+    Worker --> NASA
+    Worker --> Mail["Resend / SMTP"]
 
-The dashboard shows the most important information from NASA NeoWs:
-
-- number of objects in the next 7 days,
-- number of objects in the next 30 days,
-- closest upcoming flyby,
-- largest estimated object,
-- fastest object,
-- number of potentially hazardous asteroids,
-- flybys over time chart,
-- distance vs date chart,
-- top closest approaches,
-- recent generated alerts,
-- active watchlist preview,
-- manual refresh and the time of the last successful NASA data fetch.
-
-Manual refresh requests fresh NASA data. Reading a cached response preserves the original fetch time.
-
----
-
-### 🔎 Flyby Explorer
-
-The flyby page allows browsing current NASA NeoWs close approach data.
-
-Available features:
-
-- list of upcoming asteroid close approaches,
-- filtering by all objects, close approaches and PHA objects,
-- search by asteroid name,
-- sorting by closest distance,
-- watchlist actions,
-- table with distance, velocity, estimated diameter and PHA flag.
-
----
-
-### ☄️ Asteroid Details
-
-Each asteroid can be opened in a details view.
-
-The details view uses NASA NeoWs lookup data and displays:
-
-- asteroid name,
-- NASA/JPL identifier,
-- estimated diameter,
-- closest approach date,
-- miss distance,
-- relative velocity,
-- orbit class if available,
-- PHA status,
-- NASA JPL source link.
-
----
-
-### ⭐ Watchlist
-
-Users can add selected asteroids to a watchlist.
-
-Current behavior:
-
-- add or remove an asteroid from the watchlist,
-- show watched objects from the current NASA data range,
-- display closest watched distance,
-- display watched PHA count.
-
-The watchlist is saved in the current browser.
-
----
-
-### 🚨 Alerts
-
-The Alerts page supports rules for close approach distance, estimated diameter and NASA's potentially hazardous asteroid (PHA) flag. The dashboard preview also highlights fast flybys.
-
-Set the recipient address, email language, rules and per-check email limit in the Alerts page. You can send matching alerts on demand or save a subscription for automatic checks. The backend checks a subscription after it is saved and repeats the check every 15 minutes by default. Checks continue while the backend runs, even with the browser tab closed.
-
-The backend stores subscriptions and successful send history as JSON in `backend/NearEarth.Api/App_Data/`. It skips alerts already sent to the same recipient. The Alerts page shows the last automatic check, the last send and any reported sending error.
-
----
-
-### 📈 Charts and 3D Preview
-
-The app includes several visual views:
-
-- flybys over time,
-- distance vs date scatter plot,
-- closest objects table,
-- simplified 3D Solar System preview,
-- asteroid belt reference,
-- fullscreen object preview,
-- camera focus on selected asteroid.
-
----
-
-### 📚 Search and Education
-
-Global search finds asteroids, pages and learning topics. The education section explains NEO terminology, measurements, asteroid types and the Solar System in English and Polish.
-
----
-
-## 🛰️ Data Sources
-
-### NASA NeoWs
-
-The main data source is NASA NeoWs:
-
-```text
-https://api.nasa.gov/
+    Demo["GitHub Pages Demo"] --> Samples["Bundled Sample Data"]
+    Demo --> Simulated["Simulated Email Actions"]
 ```
 
-Used endpoints:
+### Data and Alert Processing
 
-```text
-GET /neo/rest/v1/feed
-GET /neo/rest/v1/neo/{asteroid_id}
-GET /neo/rest/v1/neo/browse
+```mermaid
+flowchart TD
+    A["Request dashboard or refresh"] --> B["ASP.NET Core API"]
+    B --> C{"Cached data sufficient?"}
+    C -->|Yes| D["Return cached NASA data"]
+    C -->|No or forceRefresh| E["Fetch NASA NeoWs data"]
+    E --> F["Normalize and aggregate results"]
+    F --> G["Update cache and sync time"]
+    G --> H["Return dashboard data"]
+    D --> H
+    I["Saved email subscription"] --> J["Scheduled alert check"]
+    J --> K["Evaluate matching asteroids"]
+    K --> L{"Already notified?"}
+    L -->|Yes| M["Skip duplicate"]
+    L -->|No| N["Send through Resend / SMTP"]
+    N --> O["Record successful send"]
 ```
 
-The app uses NeoWs to fetch:
-
-- close approach data,
-- asteroid names and IDs,
-- estimated diameters,
-- relative velocities,
-- miss distances,
-- potentially hazardous asteroid flags,
-- NASA JPL links.
-
----
-
-### JPL SBDB Lookup
-
-JPL Small-Body Database Lookup is used as an external reference source for checking asteroid information.
-
-Example object reference:
-
-```text
-https://ssd.jpl.nasa.gov/tools/sbdb_lookup.html#/?sstr=2530520
-```
-
-SBDB serves as an external reference for asteroid information.
-
----
-
-### SpaceRocks
-
-SpaceRocks is linked as a related project/source around space-data tools and science communication.
-
-```text
-https://github.com/SpaceRocks/
-```
-
----
-
-## 🛠️ Tech Stack
-
-### Frontend
-
-- React
-- TypeScript
-- Vite
-- Tailwind CSS
-- Recharts
-- Three.js
-- Lucide React
-
-### Backend
-
-- ASP.NET Core Web API
-- C#
-- HttpClient
-- MemoryCache
-- Swagger / OpenAPI
-- NASA NeoWs API proxy
-- Hosted background service for email alert checks
-- Local JSON files for subscriptions and send history
-
----
-
-## 🔌 Backend API
-
-The frontend does not call NASA directly.  
-It calls the ASP.NET Core backend, and the backend calls NASA NeoWs using a private API key.
-
-Current backend endpoints:
-
-```text
-GET /api/dashboard
-GET /api/dashboard/range?days=30
-
-GET /api/neos/feed?startDate=YYYY-MM-DD&endDate=YYYY-MM-DD
-GET /api/neos/{id}
-GET /api/neos/browse?page=0&size=20
-POST /api/alerts/check
-GET /api/alerts/history
-POST /api/alerts/subscriptions
-GET /api/alerts/subscriptions/{id}
-PUT /api/alerts/subscriptions/{id}
-DELETE /api/alerts/subscriptions/{id}
-```
-
-Both dashboard endpoints accept `forceRefresh=true` to bypass the feed cache. `DELETE /api/alerts/subscriptions/{id}` disables automatic checks for the subscription.
-
-### Why use a backend proxy?
-
-The backend is used to:
-
-- hide the NASA API key from the browser,
-- normalize NASA responses,
-- return simpler dashboard data,
-- cache API responses,
-- aggregate multiple 7-day NASA requests into a 30-day range.
-
----
-
-## 🧱 Project Structure
+### Repository Structure
 
 ```text
 NearEarth/
@@ -335,7 +160,6 @@ NearEarth/
 │   │   ├── Program.cs
 │   │   └── appsettings.json
 │   └── NearEarth.Api.Tests/
-│
 ├── frontend/
 │   ├── src/
 │   │   ├── assets/
@@ -346,150 +170,202 @@ NearEarth/
 │   ├── tests/
 │   ├── package.json
 │   └── vite.config.ts
-│
 ├── demo/
+├── LICENSE
 └── README.md
 ```
 
----
+## Getting Started
 
-## 🚀 Getting Started
+### Prerequisites
 
-Local development uses the .NET 10 SDK, Node.js 22.12 or later, and npm.
+- .NET 10 SDK
+- Node.js 22.12 or later and npm
+- A NASA API key from [NASA Open APIs](https://api.nasa.gov/)
+- Optional: Resend or SMTP credentials for email delivery
 
 > [!IMPORTANT]
-> A fresh checkout currently fails to compile the backend. Several C# model files are present in the development workspace but excluded from Git by the `models/` rule. The steps below require a working copy with those files available.
+> A fresh checkout is currently **not fully buildable**. Some backend C# model files were excluded from Git by a `models/` ignore rule, and the frontend production build has reported TypeScript error `TS5107` involving the legacy `moduleResolution` setting. The instructions below describe local development with a working source copy until these issues are resolved.
 
-### 1. Clone the repository
+### 1. Clone the Repository
 
 ```bash
 git clone https://github.com/Avuii/NearEarth.git
 cd NearEarth
 ```
 
----
+### 2. Configure the Backend
 
-### 2. Configure NASA API key
-
-Go to the backend project and set the key in .NET User Secrets.
+Store the NASA key with .NET User Secrets instead of committing it to configuration files.
 
 ```bash
 cd backend/NearEarth.Api
 dotnet user-secrets set "Nasa:ApiKey" "YOUR_NASA_API_KEY"
 ```
 
----
-
-### 3. Run the backend
+### 3. Start the API
 
 ```bash
 dotnet restore
 dotnet run --launch-profile http
 ```
 
-The `http` profile starts the API at `http://localhost:5272` and serves Swagger at `http://localhost:5272/swagger`. The `https` profile also listens at `https://localhost:7218`.
+The HTTP development profile serves the API at `http://localhost:5272` and Swagger at `http://localhost:5272/swagger`.
 
----
+### 4. Configure and Start the Frontend
 
-### 4. Configure frontend environment
+From another terminal, in the repository root, create `frontend/.env` containing:
 
-Go to the frontend project:
-
-```bash
-cd ../../frontend
-```
-
-Create a `.env` file:
-
-```env
+```dotenv
 VITE_API_URL=http://localhost:5272
 ```
 
----
-
-### 5. Run the frontend
+Then run:
 
 ```bash
+cd frontend
 npm install
 npm run dev
 ```
 
-The frontend should be available at:
+Open `http://localhost:5173`.
 
-```text
-http://localhost:5173
-```
+> [!TIP]
+> The [GitHub Pages demo](https://avuii.github.io/NearEarth/) can be explored without installing the backend or configuring NASA and email credentials.
 
----
+## Configuration & API
 
-## 🔐 Environment Variables
+### Environment Configuration
 
-Set the frontend API URL in `frontend/.env`.
+| Setting | Location | Purpose |
+| --- | --- | --- |
+| `VITE_API_URL` | `frontend/.env` | URL of the local ASP.NET Core API |
+| `Nasa:ApiKey` | Backend secrets | Private NASA NeoWs API key |
+| `Email:Provider` | Backend secrets/configuration | `Resend` or `Smtp` |
+| `Email:ResendApiKey` | Backend secrets | Resend credential |
+| `Email:From` | Backend configuration | Sender email address |
+| `Email:Smtp:Host` / `Email:Smtp:Port` | Backend configuration | SMTP server and port; example defaults `smtp.gmail.com:587` |
+| `Email:Smtp:Username` / `Email:Smtp:Password` | Backend secrets | SMTP sender credentials |
+| `Email:CheckIntervalMinutes` | Backend configuration | Automatic email check interval; default `15` |
 
-```env
-VITE_API_URL=http://localhost:5272
-```
+In operating-system environment variables, replace configuration colons with double underscores (for example, `Nasa__ApiKey`). Configure an email provider before attempting real delivery; notification recipients are set from the Alerts page.
 
-Keep the NASA API key and mail credentials in .NET User Secrets during local development. Use double underscores in place of colons when setting the same backend values through environment variables.
+> [!IMPORTANT]
+> Do not commit `.env`, API keys, email passwords, provider tokens, or locally saved alert recipients. Variables with the `VITE_` prefix are bundled into the frontend and **must not contain secrets**.
 
-| Backend setting | Purpose |
-|---|---|
-| `Nasa:ApiKey` | NASA NeoWs API key |
-| `Email:Provider` | `Resend` or `Smtp` |
-| `Email:ResendApiKey` and `Email:From` | Resend API key and sender address |
-| `Email:Smtp:Host` and `Email:Smtp:Port` | SMTP server and STARTTLS port, defaulting to `smtp.gmail.com` and `587` |
-| `Email:Smtp:Username` and `Email:Smtp:Password` | SMTP sender address and credential, such as a Gmail app password |
-| `Email:CheckIntervalMinutes` | Interval between automatic alert checks, defaulting to 15 minutes |
+### Backend API
 
-Configure one email provider before testing delivery. Recipient addresses are set in the Alerts page.
+| Method | Endpoint | Purpose |
+| --- | --- | --- |
+| `GET` | `/api/dashboard` | 7-day dashboard summary |
+| `GET` | `/api/dashboard/range?days=30` | 30-day aggregated dashboard data |
+| `GET` | `/api/neos/feed?startDate=YYYY-MM-DD&endDate=YYYY-MM-DD` | NEO feed for a date range |
+| `GET` | `/api/neos/{id}` | Asteroid details |
+| `GET` | `/api/neos/browse?page=0&size=20` | Paginated NEO browsing |
+| `POST` | `/api/alerts/check` | On-demand alert evaluation |
+| `GET` | `/api/alerts/history` | Alert history |
+| `POST` | `/api/alerts/subscriptions` | Create a subscription |
+| `GET` | `/api/alerts/subscriptions/{id}` | Read a subscription |
+| `PUT` | `/api/alerts/subscriptions/{id}` | Update a subscription |
+| `DELETE` | `/api/alerts/subscriptions/{id}` | Disable automatic checks |
 
----
+Both dashboard endpoints support `forceRefresh=true` to request fresh NASA data instead of using the cached feed.
 
-## 🧪 Testing and Builds
+### External Data Sources
 
-Run the existing tests from the repository root after installing the backend and frontend dependencies.
+| Source | Usage |
+| --- | --- |
+| [NASA NeoWs](https://api.nasa.gov/) | Main live data source: feed, object lookup and browsing |
+| [JPL Small-Body Database Lookup](https://ssd.jpl.nasa.gov/tools/sbdb_lookup.html) | External reference link for additional asteroid information; not yet integrated as a backend source |
+| [SpaceRocks](https://github.com/SpaceRocks/) | Related space-data reference |
+
+The frontend calls the backend rather than directly accessing the NASA endpoints. The application uses NeoWs routes `/neo/rest/v1/feed`, `/neo/rest/v1/neo/{asteroid_id}` and `/neo/rest/v1/neo/browse`.
+
+## Testing & Security
+
+### Automated Tests
+
+From the repository root:
 
 ```bash
 dotnet test backend/NearEarth.Api.Tests/NearEarth.Api.Tests.csproj
 node --test frontend/tests/data-sync.test.cjs
 ```
 
-The backend tests cover alert rules, sending outcomes, scheduled checks, persistence and duplicate prevention. The frontend tests cover validation, storage and restoration of the last successful sync time.
+The backend tests cover alert validation, delivery results, scheduled checks, JSON persistence, and duplicate prevention. Frontend tests cover validation and restoring the last successful sync timestamp. A previously reported local run passed **24 backend tests and 5 frontend tests**; this is not a claim about the latest CI status.
 
-The full frontend build (`npm run build` in `frontend/`) currently stops at TypeScript error `TS5107`. The installed compiler rejects the legacy `moduleResolution` setting in `frontend/tsconfig.app.json`.
+### Build Verification
 
----
+```bash
+cd frontend
+npm install
+npm run build
+```
 
-## ⚠️ Limitations
+> [!WARNING]
+> The production frontend build has been reported to fail with TypeScript `TS5107`. The backend checkout also needs its missing model files restored to Git. These are known build issues, not successful checks.
 
-- The dashboard alert preview can show sample alerts when the loaded NASA range is empty.
-- The 3D preview uses a simplified model for education.
+### Security and Data Handling
 
----
+- The NASA API key and email credentials belong in backend secrets or environment variables, not in frontend code.
+- The personal watchlist is stored in the browser through `localStorage`.
+- Email subscriptions and send history are stored as local JSON files, not in a database.
+- User accounts and authentication are **not implemented**; the API is not ready for unrestricted public deployment with personal subscription data.
+- The demo uses sample data and simulated sending, without real email delivery.
 
-## 🛣️ Roadmap
+> [!WARNING]
+> NearEarth is an educational visualization, not an official asteroid hazard-warning system. For authoritative assessments, refer to [NASA CNEOS](https://cneos.jpl.nasa.gov/) and [JPL](https://ssd.jpl.nasa.gov/).
 
-- [ ] Make a fresh checkout buildable by tracking the missing backend models and updating the frontend TypeScript configuration.
-- [ ] Deploy the API and connect a public version of the frontend to live data.
-- [ ] Add accounts and authentication, with a server-side watchlist that follows the user across devices.
-- [ ] Add database storage for alert subscriptions and send history.
+## Project Status & Roadmap
+
+**Status:** Active development.
+
+### Current Implementation
+
+| Component | Status | Notes |
+| --- | --- | --- |
+| React dashboard and NASA NeoWs integration | Implemented | Requires running API for live data |
+| 7-day summary and 30-day aggregation | Implemented | Backend caching and manual refresh |
+| Flyby Explorer, object lookup, search and education | Implemented | Polish and English educational content |
+| Browser watchlist | Implemented | `localStorage` only |
+| Charts and 3D preview | Implemented | Stats tab still uses sample data |
+| In-app alerts and email subscription flow | Implemented | Real sending requires provider configuration |
+| Background checks and duplicate prevention | Implemented | JSON-based persistence |
+| Automated backend and frontend tests | Implemented | Earlier local results: 24 backend / 5 frontend passed |
+| SQL database and authenticated user accounts | Not implemented | Planned |
+| Public backend deployment | Not implemented | Planned |
+| Fresh-clone build and frontend production build | Blocked | Missing tracked models and TypeScript configuration error |
+
+### Completed
+
+- [x] React + TypeScript dashboard and ASP.NET Core API
+- [x] NASA NeoWs proxy, normalization, caching, and 30-day aggregation
+- [x] Asteroid search, browsing, details, and browser watchlist
+- [x] Live-data charts and simplified Three.js visualization
+- [x] Manual and scheduled alerts with configurable email transport
+- [x] JSON-backed subscriptions, send history, and duplicate suppression
+- [x] English and Polish educational content
+- [x] Backend and frontend automated test suites
+- [x] Standalone static demo on GitHub Pages
+
+### Planned
+
+- [ ] Restore the missing backend model files to Git and resolve frontend TypeScript `TS5107`.
+- [ ] Deploy the backend and connect a public frontend to live NASA data.
+- [ ] Add authentication and a server-side watchlist synchronized across devices.
+- [ ] Replace local JSON alert storage with database persistence.
 - [ ] Connect the Stats tab to live NASA data.
-- [ ] Add a standalone data sync schedule and a persistent sync log. Automatic alert checks already fetch fresh NASA data for active subscriptions.
-- [ ] Integrate JPL SBDB as a backend source for asteroid details.
-- [ ] Implement SMS notifications. The current sender class is a placeholder.
-- [ ] Continue responsive UI polish, update the README screenshots and prepare a stable release.
+- [ ] Add an independent scheduled NASA data sync and persistent sync log.
+- [ ] Integrate JPL SBDB as a live backend source.
+- [ ] Implement actual SMS notifications (the current sender is a placeholder).
+- [ ] Improve responsive behavior, accessibility, screenshots, and release readiness.
 
----
+## License
 
-## ⚠️ Disclaimer
+Copyright © 2026 **[Avuii](https://github.com/Avuii)**. All rights reserved for the original project materials under the updated [LICENSE](LICENSE).
 
-NearEarth is an educational project.  
-It does not provide official asteroid risk warnings and does not replace NASA, JPL, CNEOS or other scientific systems.
+Copying, modifying, redistributing, or commercially using the original source code and project materials requires prior written authorization, except where permitted by law. Third-party components retain their own licenses. Earlier versions previously released under MIT remain available under the permissions of that license.
 
-All critical interpretation of Near-Earth Object risk should be based on official NASA/JPL/CNEOS sources.
+## Author
 
----
-
-## 👩‍💻 Author
-
-Created by Katarzyna Stańczyk.
+Created and maintained by **[Avuii](https://github.com/Avuii)**.
